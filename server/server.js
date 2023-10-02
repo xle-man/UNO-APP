@@ -16,7 +16,11 @@ const io = socketio(server, {
 
 app.use(cors());
 
-io.on("conn", (socket) => {
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+io.on("connection", (socket) => {
   console.log(`New client joined: ${socket.id}`);
 
   setTimeout(() => {
@@ -26,9 +30,6 @@ io.on("conn", (socket) => {
   socket.on("disconnect", () => {});
 });
 
-app.get("/", (res, req) => {
-  res.send({ name: "Hello Kamil!" });
-});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
