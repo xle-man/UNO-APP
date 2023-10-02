@@ -27,7 +27,7 @@ io.on("conn", (socket) => {
 });
 
 app.get("/", (res, req) => {
-  res.send({ name: "Hello World!" });
+  res.send({ name: "Hello Kamil!" });
 });
 
 server.listen(PORT, () => {
