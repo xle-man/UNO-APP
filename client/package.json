@@ -14,7 +14,7 @@
     "vite": "^4.4.5"
   },
   "dependencies": {
-    "socket.io-client": "^4.7.2",
+    "socket.io": "^4.7.2",
     "svelte-routing": "^2.4.0"
   }
 }
