@@ -1,3 +1,5 @@
+const SERVER_URL = "http://localhost:3000";
+
 const SCREEN = {
     MAIN_SCREEN: "",
     SIGN_IN_SCREEN: "signIn",
@@ -8,5 +10,6 @@ Object.freeze(SCREEN);
 
 
 export default {
-    SCREEN
+    SCREEN,
+    SERVER_URL
 }
