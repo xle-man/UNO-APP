@@ -13,7 +13,7 @@ export function switchScreen(screen) {
 }
 
 export function signIn(login, password) {
-    // Server API for signing in (returns true/false)\
+    // Server API for signing in (returns true/false)
     isSignedIn.set(true);
     return true;
 }

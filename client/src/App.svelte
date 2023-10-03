@@ -2,15 +2,17 @@
   import { Router, Link, Route, navigate } from "svelte-routing";
   import { io } from "socket.io-client";
   import { isSocketConnected } from "./javascripts/AppStore";
+  import CONSTANTS from "./javascripts/Constants";
 
   import GameScreen from "./components/GameScreen.svelte";
   import MainScreen from "./components/MainScreen.svelte";
   import SingInScreen from "./components/SingInScreen.svelte";
+   import Constants from "./javascripts/Constants";
 
 
   export let url;
 
-  let socket = io("http://localhost:3000");
+  let socket = io(CONSTANTS.SERVER_URL);
 
   socket.on("connect", () => {
     console.log("CONNECT");
@@ -27,7 +29,6 @@
     console.log("DISCONNECT");
     isSocketConnected.set(false);
   });
-
 
 </script>
 
