@@ -17,7 +17,7 @@ const io = socketio(server, {
 app.use(cors());
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello World! Test");
 });
 
 io.on("connection", (socket) => {
