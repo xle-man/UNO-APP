@@ -13,7 +13,17 @@ export const alertData = writable({type: "INFO", message: ""});
 
 export const typeOfGameSelection = writable("");
 export const playersWaitingForGame = writable([]);
-export const playersAmountForGame = writable(0);
+export const requiredAmountOfPlayers = writable(0);
+
+export const waitingForPlayersScreenData = writable({
+    type: "",
+    players: [],
+    requiredAmountOfPlayers: 0
+});
+
+export const listOfMatchesScreenData = writable({
+    matches: [],
+});
 
 
 export function switchScreen(screen) {

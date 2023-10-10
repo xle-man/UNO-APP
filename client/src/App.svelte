@@ -1,20 +1,19 @@
 <script>
-  import { Router, Link, Route, navigate } from "svelte-routing";
+  import { Router, Route } from "svelte-routing";
   import { io } from "socket.io-client";
   import { isSocketConnected, socketIO } from "./javascripts/AppStore";
   import CONSTANTS from "./javascripts/Constants";
 
+  import Alert from "./components/Alert.svelte";
   import GameScreen from "./components/GameScreen.svelte";
   import MainScreen from "./components/MainScreen.svelte";
   import WaitingForGameScreen from "./components/WaitingForGameScreen.svelte";
-  import Alert from "./components/Alert.svelte";
-   import ListOfMatchesScreen from "./components/ListOfMatchesScreen.svelte";
+  import ListOfMatchesScreen from "./components/ListOfMatchesScreen.svelte";
 
   export let url;
 
   let socket = io(CONSTANTS.SERVER_URL);
   socketIO.set(socket);
-
 
   socket.on("connect", () => {
     console.log("CONNECT");
