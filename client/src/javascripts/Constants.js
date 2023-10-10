@@ -1,15 +1,32 @@
 const SERVER_URL = "http://localhost:3000";
 
+
 const SCREEN = {
     MAIN_SCREEN: "",
-    SIGN_IN_SCREEN: "signIn",
-    SIGN_UP_SCREEN: "signUp",
-    GAME_SCREEN: "game"
+    GAME_SCREEN: "game",
+    WAITING_FOR_GAME_SCREEN: "waitingForGame"
 }
 Object.freeze(SCREEN);
 
 
+const TYPE_OF_GAME_SELECTION = {
+    CREATE: "CREATE",
+    JOIN: "JOIN"
+}
+Object.freeze(TYPE_OF_GAME_SELECTION);
+
+
+const ALERT_TYPES = {
+    INFO: "INFO",
+    WARNING: "WARNING",
+    ERROR: "ERROR",
+}
+Object.freeze(ALERT_TYPES);
+
+
 export default {
+    SERVER_URL,
     SCREEN,
-    SERVER_URL
+    TYPE_OF_GAME_SELECTION,
+    ALERT_TYPES,
 }

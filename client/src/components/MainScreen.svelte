@@ -1,21 +1,17 @@
 <script>   
     import { onMount } from "svelte";
-    import { isSignedIn, switchScreen } from "../javascripts/AppStore";
+    import { switchScreen, typeOfGameSelection } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
-    onMount(() => {
-        if(!$isSignedIn) {
-            switchScreen(CONSTANTS.SCREEN.SIGN_IN_SCREEN);
-        }
-    })
-    
-
     function createGame() {
-        // create a Match 
+        typeOfGameSelection.set(CONSTANTS.TYPE_OF_GAME_SELECTION.CREATE);
+        switchScreen(CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN);
     }
 
     function joinGame() {
         // show list of available Matches
+        typeOfGameSelection.set(CONSTANTS.TYPE_OF_GAME_SELECTION.JOIN);
+        switchScreen(CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN);
     }
 
 </script>
