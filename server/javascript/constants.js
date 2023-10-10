@@ -1,0 +1,7 @@
+const GAME_STATES = {
+  FINISHED: "FINISHED",
+  WAITING_FOR_PLAYERS: "WAITING_FOR_PLAYERS",
+  ACTIVE: "ACTIVE",
+};
+
+module.exports = { GAME_STATES };
