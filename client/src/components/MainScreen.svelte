@@ -9,9 +9,8 @@
     }
 
     function joinGame() {
-        // show list of available Matches
         typeOfGameSelection.set(CONSTANTS.TYPE_OF_GAME_SELECTION.JOIN);
-        switchScreen(CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN);
+        switchScreen(CONSTANTS.SCREEN.LIST_OF_MATCHES);
     }
 
 </script>

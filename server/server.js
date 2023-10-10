@@ -1,3 +1,6 @@
+// import db from "./javascript/firebase";
+const db = require("./javascript/firebase");
+
 const express = require("express");
 const socketio = require("socket.io");
 const http = require("http");

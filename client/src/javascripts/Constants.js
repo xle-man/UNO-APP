@@ -1,10 +1,11 @@
-const SERVER_URL = "http://localhost:3000";
+const SERVER_URL = "http://192.168.140.184:3000";
 
 
 const SCREEN = {
     MAIN_SCREEN: "",
     GAME_SCREEN: "game",
-    WAITING_FOR_GAME_SCREEN: "waitingForGame"
+    WAITING_FOR_GAME_SCREEN: "waitingForGame",
+    LIST_OF_MATCHES: "listOfMatches",
 }
 Object.freeze(SCREEN);
 

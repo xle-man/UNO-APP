@@ -31,7 +31,7 @@
             }
 
             playerName.set(playerNameInputValue);
-            createGame(parseInt(playersAmountInputValue));
+            createGame(playerNameInputValue, parseInt(playersAmountInputValue));
             showDialog = false;
         }
         else {
