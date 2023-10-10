@@ -6,9 +6,8 @@
 
   import GameScreen from "./components/GameScreen.svelte";
   import MainScreen from "./components/MainScreen.svelte";
-  import SingInScreen from "./components/SingInScreen.svelte";
-   import Constants from "./javascripts/Constants";
-
+  import WaitingForGameScreen from "./components/WaitingForGameScreen.svelte";
+  import Alert from "./components/Alert.svelte";
 
   export let url;
 
@@ -37,13 +36,15 @@
     <Route path="/">
       <MainScreen />
     </Route>
-    <Route path="/signIn">
-      <SingInScreen />
-    </Route>
     <Route path="/game">
       <GameScreen />
+    </Route>
+    <Route path="/waitingForGame">
+      <WaitingForGameScreen />
     </Route>
   </Router>
 {:else}
   <div>Connecting to the server...</div>
 {/if}
+
+<Alert />

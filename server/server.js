@@ -27,7 +27,9 @@ io.on("connection", (socket) => {
     socket.emit("test", "Event, which was emmited after 5 seconds.");
   }, 5000);
 
-  socket.on("disconnect", () => {});
+  socket.on("disconnect", () => {
+    console.log(`Client disconneted: ${socket.id}`);
+  });
 });
 
 
