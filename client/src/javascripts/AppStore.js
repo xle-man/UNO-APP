@@ -23,6 +23,13 @@ export const listOfMatchesScreenData = writable({
     matches: [],
 });
 
+export const gameScreenData = writable({
+    players: [],
+    player: {},
+    activeTurn: "",
+    playedCards: []
+});
+
 
 export function switchScreen(screen) {
     navigate(`/${screen}`, {replace: true});

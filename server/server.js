@@ -123,6 +123,7 @@ io.on("connection", (socket) => {
 
     if(updatedPlayersList.length == match.requiredAmountOfPlayers) {
       // start match
+      console.log(match.id)
     }
 
     await updateDoc(docRef, {
