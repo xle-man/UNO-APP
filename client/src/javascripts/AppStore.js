@@ -3,20 +3,18 @@ import { navigate } from "svelte-routing";
 import CONSTANTS from "../javascripts/Constants";
 
 export const matchID = writable(null);
-export const playerID = writable(null);
 export const playerName = writable("");
 export const isSocketConnected = writable(false);
 export const socketIO = writable(null);
 
-export const alertDisplayTime = writable(0);
-export const alertData = writable({type: "INFO", message: ""});
-
-export const typeOfGameSelection = writable("");
-export const playersWaitingForGame = writable([]);
-export const requiredAmountOfPlayers = writable(0);
+export const alertData = writable({
+    type: "INFO", 
+    message: "",
+    time: 0
+});
 
 export const waitingForPlayersScreenData = writable({
-    type: "",
+    matchID: "",
     players: [],
     requiredAmountOfPlayers: 0
 });
@@ -31,10 +29,55 @@ export function switchScreen(screen) {
 };
 
 
-export function createGame(playerName, amountOfPlayers) {
-    get(socketIO).emit("createGame", playerName, amountOfPlayers);
+export function getAvailableMatches() {
+    get(socketIO).emit("getAvailableMatches", (list) => {
+        listOfMatchesScreenData.update((data) => {
+            data.matches = list;
+            return data;
+        });
+    });
 };
 
-export function getAvailableMatches() {
-    get(socketIO).emit("getAvailableMatches");
+
+export function createGame(amountOfPlayers) {
+    get(socketIO).emit("createGame", get(playerName), amountOfPlayers, (response) => {
+        console.log("createGame (result):", response.result);
+        if(response.result) {
+            console.log("createGame (data):", response.data);
+            switchScreen(CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN);
+            waitingForPlayersScreenData.update(value => {
+                value.matchID = response.data.id;
+                value.players = response.data.players;
+                value.requiredAmountOfPlayers = response.data.requiredAmountOfPlayers;
+                return value;
+            });
+        }
+        else {
+            alert("error during creating match.");
+        }
+    });
 };
+
+
+export function joinToGame(matchID) {
+    get(socketIO).emit("joinToGame", get(playerName), matchID, (response) => {
+        console.log("joinToGame (result):", response.result);
+        if(response.result) {
+            console.log("joinToGame (data):", response.data);
+            switchScreen(CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN);
+            waitingForPlayersScreenData.update(value => {
+                value.matchID = response.data.id;
+                value.players = response.data.players;
+                value.requiredAmountOfPlayers = response.data.requiredAmountOfPlayers;
+                return value;
+            });
+        }
+        else {
+            alert("error during joining to match.");
+        }
+    });
+}
+
+export function quitMatch() {
+    get(socketIO).emit("quitMatch", get(waitingForPlayersScreenData).matchID);
+}

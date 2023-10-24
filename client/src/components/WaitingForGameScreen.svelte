@@ -1,26 +1,54 @@
 <script>
+    import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { alertData, alertDisplayTime, createGame, playerName, playersWaitingForGame, typeOfGameSelection } from "../javascripts/AppStore";
+    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
-    function quitMatch() {
-        // quit match
+
+    onMount(() => {
+        get(socketIO).on("updateWaitingForGameData", (data) => {
+            console.log("update waiting room:", data);
+            waitingForPlayersScreenData.update(value => {
+                value.players = data.players;
+                return value;
+            });
+        });
+
+        get(socketIO).on("startGame", () => {
+            switchScreen(CONSTANTS.SCREEN.GAME_SCREEN);
+        });
+    });
+
+
+    onDestroy(() => {
+        get(socketIO).off("updateWaitingForGameData");
+        get(socketIO).off("startGame");
+    });
+
+
+    function onQuitMatch() {
+        quitMatch();
+        switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
     }
 
 </script>
 
+
+<div>{$waitingForPlayersScreenData.matchID}</div>
 <div class="playersList-container">
-    {#each $playersWaitingForGame as player}
+    players:
+    {#each $waitingForPlayersScreenData.players as player}
         <div class="playersList-item">
             {player.name}
         </div>
     {/each}
 </div>
 <div class="actualPlayersAmount-container">
-    -/-
+    amount of players:
+    {$waitingForPlayersScreenData.players.length}/{$waitingForPlayersScreenData.requiredAmountOfPlayers}
 </div>
 
-<button>QUIT</button>
+<button on:click={onQuitMatch}>QUIT</button>
 
 
 <style>

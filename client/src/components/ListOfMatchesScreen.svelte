@@ -1,28 +1,34 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { getAvailableMatches, listOfMatchesScreenData, socketIO } from "../javascripts/AppStore";
+    import { getAvailableMatches, listOfMatchesScreenData, socketIO, joinToGame, switchScreen } from "../javascripts/AppStore";
+    import CONSTANTS from "../javascripts/Constants";
+
 
     onMount(() => {
         get(socketIO).on("updateAvailableMatches", (list) => {
-            listOfMatchesScreenData.update((value) => {
-                value.matches = list;
-                return value;
+            listOfMatchesScreenData.update((data) => {
+                data.matches = list;
+                return data;
             });
         });
         getAvailableMatches();
     });
+
 
     onDestroy(() => {
         get(socketIO).off("updateAvailableMatches");
     });
 
 
-    function joinToMatch(id) {
-        console.log("JOIN to Match with id:", id);
+    function onJoinToMatch(id) {
+        joinToGame(id);
     }
 
 </script>
+
+
+<button on:click={() => {switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN)}}>HOME</button>
 
 <div class="listOfMatches-container">
     {#each $listOfMatchesScreenData.matches as match}
@@ -36,7 +42,7 @@
                     <div>{player.name}</div>
                 {/each}
             </div>
-            <button on:click={() => {joinToMatch(match.id)}}>JOIN</button>
+            <button on:click={() => {onJoinToMatch(match.id)}}>JOIN</button>
         </div>
     {/each}
 </div>

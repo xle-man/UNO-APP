@@ -1,15 +1,15 @@
 <script>
     import { fade, fly } from 'svelte/transition';
     import { get } from "svelte/store";
-    import { alertDisplayTime, alertData } from '../javascripts/AppStore';
+    import { alertData } from '../javascripts/AppStore';
 
     let isIntervalOn = false;
 
-    $: if($alertDisplayTime > 0 && !isIntervalOn) {
+    $: if($alertData.time > 0 && !isIntervalOn) {
         isIntervalOn = true;
         const timeDecrement = setInterval(() => {
-            alertDisplayTime.set(get(alertDisplayTime) - 200);
-            if(get(alertDisplayTime) <= 0) { 
+            alertData.update(data => Object.assign(data, {time: data.time - 200}));
+            if(get(alertData).time <= 0) { 
                 clearInterval(timeDecrement);
                 isIntervalOn = false;
             }
@@ -17,7 +17,7 @@
     }
 </script>
 
-{#if $alertDisplayTime > 0}
+{#if $alertData.time > 0}
     <div class="alert" in:fly={{ x: 200, duration: 500}} out:fade={{duration: 500}} > <!--z-index[100]-->
         {$alertData.message}
     </div>

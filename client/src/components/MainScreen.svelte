@@ -1,40 +1,81 @@
 <script>   
-    import { get } from "svelte/store";
-    import { playerName, switchScreen, typeOfGameSelection, alertData, alertDisplayTime, createGame } from "../javascripts/AppStore";
+    import { get, writable } from "svelte/store";
+    import { playerName, switchScreen, alertData, createGame } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
-    let showDialog = true;
+
+    let showDialog = get(playerName) ? false : true;
     let playerNameInputValue;
-    let playersAmountInputValue = 4;
+    const amountOfPlayersButtons = writable([
+        {
+            value: 2,
+            isSelected: true
+        },
+        {
+            value: 3,
+            isSelected: false
+        },
+        {
+            value: 4,
+            isSelected: false
+        }
+    ]);
+
 
     function setName() {
         if(!playerNameInputValue) {
-            alertData.set({type: CONSTANTS.ALERT_TYPES.INFO, message: "Player name is required."});
-            alertDisplayTime.set(3000);
+            alertData.set({type: CONSTANTS.ALERT_TYPES.INFO, message: "Player name is required.", time: 3000});
             return;
         }
         playerName.set(playerNameInputValue);
         showDialog = false;
     }
 
+
     function onCreateGame() {
-        typeOfGameSelection.set(CONSTANTS.TYPE_OF_GAME_SELECTION.CREATE);
-        // createGame(playerNameInputValue, playersAmountInputValue);
-        switchScreen(CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN);
+        createGame(getSelectedAmountOfPlayers());
     }
 
+
     function onJoinGame() {
-        typeOfGameSelection.set(CONSTANTS.TYPE_OF_GAME_SELECTION.JOIN);
         switchScreen(CONSTANTS.SCREEN.LIST_OF_MATCHES);
+    }
+
+
+    function changeAmountOfPlayersButton(value) {
+        amountOfPlayersButtons.set(get(amountOfPlayersButtons).map((button) => {
+            if(button.value === value)
+                button.isSelected = true;
+            else
+                button.isSelected = false;
+            return button;
+        }));
+    }
+
+
+    function getSelectedAmountOfPlayers() {
+        return get(amountOfPlayersButtons).filter(button => button.isSelected === true)[0].value;
     }
 
 </script>
 
-<div>
-    <button on:click={onCreateGame}>CREATE</button>
-    <button on:click={onJoinGame}>JOIN</button>
-</div>
 
+<div>
+    <div>
+        <button on:click={onCreateGame}>CREATE</button>
+        <div>
+            amount of players:
+            {#each $amountOfPlayersButtons as button}
+                <button class={`amountOfPlayersButton ${button.isSelected ? "amountOfPlayersButton-selected" : ""}`} on:click={() => {changeAmountOfPlayersButton(button.value)}}>
+                    {button.value}
+                </button>
+            {/each}
+        </div>
+    </div>
+    <div>
+        <button on:click={onJoinGame}>JOIN</button>
+    </div>
+</div>
 
 {#if showDialog}
     <div class="dialog-container"> <!--z-index[10]-->
@@ -51,6 +92,7 @@
 
 
 <style>
+    /* --- dialog --- */
     .dialog-container {
         position: fixed;
         z-index: 10;
@@ -109,5 +151,18 @@
         padding: 0px 5px;
         font-size: 12px;
         top: -8px;
+    }
+
+
+    /* --- screen --- */
+    .amountOfPlayersButton {
+        background-color: gray;
+        border: none;
+        padding: 10px;
+        transition: 0.3s;
+    }
+
+    .amountOfPlayersButton-selected {
+        background-color: goldenrod;
     }
 </style>
