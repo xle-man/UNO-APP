@@ -13,7 +13,6 @@
                 return value;
             });
         });
-
         get(socketIO).on("startGame", () => {
             switchScreen(CONSTANTS.SCREEN.GAME_SCREEN);
         });
@@ -30,6 +29,8 @@
         quitMatch();
         switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
     }
+
+
 
 </script>
 

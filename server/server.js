@@ -121,10 +121,9 @@ io.on("connection", (socket) => {
       socketId: socket.id
     });
 
-    if(updatedPlayersList.length == match.requiredAmountOfPlayers) {
-      // start match
-      console.log(match.id)
-    }
+    console.log(updatedPlayersList);
+
+
 
     await updateDoc(docRef, {
       players: updatedPlayersList
@@ -135,7 +134,7 @@ io.on("connection", (socket) => {
     const data = {
       id: docRef.id,
       players: updatedPlayersList.map((player) => {return {name: player.name}}),
-      requiredAmountOfPlayers: match.requiredAmountOfPlayers    
+      requiredAmountOfPlayers: match.requiredAmountOfPlayers
     };
     const dataToSend = {
       result: true,
@@ -144,9 +143,26 @@ io.on("connection", (socket) => {
 
     callback(dataToSend);
 
-    match.players.forEach((player) => {
+
+    updatedPlayersList.forEach((player) => {
       io.to(player.socketId).emit("updateWaitingForGameData", data);
     });
+    if(updatedPlayersList.length == match.requiredAmountOfPlayers) {
+      updatedPlayersList.forEach((player) => {
+        console.log(player);
+        try {
+          io.to(player.socketId).emit("startGame");
+        }
+        catch (error) {
+          console.log('Error while emitting startGame event:', error);
+        }
+
+      });
+      await updateDoc(docRef, {
+        state: CONSTANS.GAME_STATES.ACTIVE
+      });
+      console.log("teoretycznie poszło", updatedPlayersList)
+    }
 
   });
 

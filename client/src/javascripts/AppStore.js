@@ -85,6 +85,26 @@ export function joinToGame(matchID) {
     });
 }
 
+
+// export function startGame(matchID) {
+//     get(socketIO).on("startGame", get(playerName), matchID, (response) => {
+//         console.log("joinToGame (result):", response.result);
+//         if(response.result) {
+//             console.log("joinToGame (data):", response.data);
+//             switchScreen(CONSTANTS.SCREEN.GAME_SCREEN);
+//             waitingForPlayersScreenData.update(value => {
+//                 value.matchID = response.data.id;
+//                 value.players = response.data.players;
+//                 value.requiredAmountOfPlayers = response.data.requiredAmountOfPlayers;
+//                 return value;
+//             });
+//         }
+//         else {
+//             alert("error during joining to match.");
+//         }
+//     });
+// }
+
 export function quitMatch() {
     get(socketIO).emit("quitMatch", get(waitingForPlayersScreenData).matchID);
 }
