@@ -5,12 +5,13 @@ const cors = require("cors");
 const path = require("path");
 
 const db = require("./javascript/firebase");
-const CONSTANS = require("./javascript/constants");
+const CONSTANTS = require("./javascript/constants");
 const { collection, getDocs, addDoc, updateDoc, getDoc, doc, deleteDoc } = require("firebase/firestore");
 
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+let deck = [];
 const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
@@ -19,11 +20,22 @@ const io = socketio(server, {
 });
 
 app.use(cors());
-
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 
 app.get("/", (req, res) => {
   res.send("Hello World! Test");
 });
+let id;
+
+function initalizeGame() {
+
+}
 
 
 io.on("connection", (socket) => {
@@ -37,7 +49,7 @@ io.on("connection", (socket) => {
     console.log("createGame:", playerName, socket.id, requiredAmountOfPlayers);
 
     const docRef = await addDoc(matchesRef, {
-      state: CONSTANS.GAME_STATES.WAITING_FOR_PLAYERS,
+      state: CONSTANTS.GAME_STATES.WAITING_FOR_PLAYERS,
       requiredAmountOfPlayers,
       players,
     });
@@ -47,7 +59,7 @@ io.on("connection", (socket) => {
       result: true,
       data: {
         id: docRef.id,
-        players: players.map((player) => {return {name: player.name}}),
+        players: players.map((player) => { return { name: player.name } }),
         requiredAmountOfPlayers
       }
     };
@@ -63,10 +75,10 @@ io.on("connection", (socket) => {
       const list = [];
       snap.docs.map((doc) => {
         const data = doc.data();
-        if (data.state === CONSTANS.GAME_STATES.WAITING_FOR_PLAYERS) {
+        if (data.state === CONSTANTS.GAME_STATES.WAITING_FOR_PLAYERS) {
           list.push({
-            id: doc.id, 
-            players: data.players.map((player) => {return {name: player.name}}),
+            id: doc.id,
+            players: data.players.map((player) => { return { name: player.name } }),
             requiredAmountOfPlayers: data.requiredAmountOfPlayers
           });
         }
@@ -81,15 +93,15 @@ io.on("connection", (socket) => {
 
 
   // refreshing list for every client in ListOfMatchesScreen
-  const updateAvailableMatches = async() => {
+  const updateAvailableMatches = async () => {
     const listOfAvaiableMatches = await getDocs(matchesRef).then((snap) => {
       const list = [];
       snap.docs.map((doc) => {
         const data = doc.data();
-        if (data.state === CONSTANS.GAME_STATES.WAITING_FOR_PLAYERS) {
+        if (data.state === CONSTANTS.GAME_STATES.WAITING_FOR_PLAYERS) {
           list.push({
             id: doc.id,
-            players: data.players.map((player) => {return {name: player.name}}),
+            players: data.players.map((player) => { return { name: player.name } }),
             requiredAmountOfPlayers: data.requiredAmountOfPlayers
           });
         }
@@ -97,16 +109,17 @@ io.on("connection", (socket) => {
 
       return list;
     });
-    
+
     io.emit("updateAvailableMatches", listOfAvaiableMatches);
   };
 
 
   socket.on("joinToGame", async (playerName, matchID, callback) => {
+    id = matchID;
     const docRef = doc(db, "matches", matchID);
     let match = await getDoc(docRef).then(snap => snap.data());
 
-    if(match.players.length == match.requiredAmountOfPlayers) {
+    if (match.players.length == match.requiredAmountOfPlayers) {
       const dataToSend = {
         result: false,
         data: {}
@@ -133,7 +146,7 @@ io.on("connection", (socket) => {
     // prepared data sending to client [remember the security of private data]
     const data = {
       id: docRef.id,
-      players: updatedPlayersList.map((player) => {return {name: player.name}}),
+      players: updatedPlayersList.map((player) => { return { name: player.name } }),
       requiredAmountOfPlayers: match.requiredAmountOfPlayers
     };
     const dataToSend = {
@@ -147,11 +160,12 @@ io.on("connection", (socket) => {
     updatedPlayersList.forEach((player) => {
       io.to(player.socketId).emit("updateWaitingForGameData", data);
     });
-    if(updatedPlayersList.length == match.requiredAmountOfPlayers) {
+    if (updatedPlayersList.length == match.requiredAmountOfPlayers) {
       updatedPlayersList.forEach((player) => {
         console.log(player);
         try {
           io.to(player.socketId).emit("startGame");
+
         }
         catch (error) {
           console.log('Error while emitting startGame event:', error);
@@ -159,12 +173,27 @@ io.on("connection", (socket) => {
 
       });
       await updateDoc(docRef, {
-        state: CONSTANS.GAME_STATES.ACTIVE
+        state: CONSTANTS.GAME_STATES.ACTIVE
       });
-      console.log("teoretycznie poszło", updatedPlayersList)
+      let temp = CONSTANTS.CARDS;
+      deck = shuffleArray([...temp])
+      updatedPlayersList.forEach((player) => {
+        let cards = [];
+        for (let i = 0; i < 7; i++) {
+          cards.push(deck[0])
+          deck.splice(0, 1);
+        }
+
+        io.to(player.socketId).emit("getCards", cards)
+      })
+      console.log(deck);
+
     }
 
   });
+
+
+
 
 
   socket.on("quitMatch", async (matchID) => {
@@ -174,7 +203,7 @@ io.on("connection", (socket) => {
     const updatedPlayersList = match.players.filter(player => player.socketId != socket.id);
     console.log("quitMatch (updated list of players):", updatedPlayersList);
 
-    if(updatedPlayersList.length) {
+    if (updatedPlayersList.length) {
       await updateDoc(docRef, {
         players: updatedPlayersList
       });
@@ -184,13 +213,13 @@ io.on("connection", (socket) => {
       // prepared data sending to client [remember the security of private data]
       const dataToSend = {
         id: `docRef`.id,
-        players: updatedPlayersList.map((player) => {return {name: player.name}}),
+        players: updatedPlayersList.map((player) => { return { name: player.name } }),
         requiredAmountOfPlayers: match.requiredAmountOfPlayers
       };
 
       updatedPlayersList.forEach((player) => {
         io.to(player.socketId).emit("updateWaitingForGameData", dataToSend);
-      }); 
+      });
     }
     else {
       await deleteDoc(docRef);

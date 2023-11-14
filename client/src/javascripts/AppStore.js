@@ -30,6 +30,9 @@ export const gameScreenData = writable({
     playedCards: []
 });
 
+export const cardsData = writable({
+    
+});
 
 export function switchScreen(screen) {
     navigate(`/${screen}`, {replace: true});
