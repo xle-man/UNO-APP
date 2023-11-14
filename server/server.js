@@ -9,9 +9,13 @@ const CONSTANTS = require("./javascript/constants");
 const { collection, getDocs, addDoc, updateDoc, getDoc, doc, deleteDoc } = require("firebase/firestore");
 
 const PORT = process.env.PORT || 3000;
+let order;
+let discardPile = [];
+let currentPlayer = 0;
+let players = [];
 
 const app = express();
-let deck = [];
+let drawPile = [];
 const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
@@ -91,6 +95,37 @@ io.on("connection", (socket) => {
     callback(listOfAvaiableMatches);
   });
 
+  socket.on("requestTurn", async(playerName, card, callback) => {
+    console.log("joł")
+    let index = -1;
+    console.log("Player name: ", playerName)
+    players.forEach((player => {
+      if(player.name == playerName)
+      {
+        index = players.indexOf(player);
+      }
+    }))
+    console.log(index);
+    if(index == currentPlayer)
+    {
+      if(discardPile[0].color == card.color || discardPile[0].symbol == card.symbol)
+      {
+        console.log("siuu")
+        callback(true);
+      }
+      else
+      {
+        console.log("bruh")
+        callback(false);
+      }
+    }
+    else
+    {
+      console.log("")
+        callback(false);
+    }
+  });
+
 
   // refreshing list for every client in ListOfMatchesScreen
   const updateAvailableMatches = async () => {
@@ -133,8 +168,10 @@ io.on("connection", (socket) => {
       name: playerName,
       socketId: socket.id
     });
+    players = updatedPlayersList;
+    console.log(players)
 
-    console.log(updatedPlayersList);
+    console.log("Players: ", updatedPlayersList);
 
 
 
@@ -176,21 +213,42 @@ io.on("connection", (socket) => {
         state: CONSTANTS.GAME_STATES.ACTIVE
       });
       let temp = CONSTANTS.CARDS;
-      deck = shuffleArray([...temp])
+      drawPile = shuffleArray([...temp])
+      order = 1;
+      while(true)
+      {
+        if(drawPile[0].color != CONSTANTS.COLORS.WILD)
+        {
+          discardPile.push(drawPile[0])
+          drawPile.splice(0, 1);
+          break;
+        }
+        else
+        {
+          drawPile.push(drawPile[0])
+          drawPile.splice(0, 1);
+        }
+      }
+      
+      console.log("Center: ", discardPile)
+      
+      currentPlayer = 0;
       updatedPlayersList.forEach((player) => {
         let cards = [];
         for (let i = 0; i < 7; i++) {
-          cards.push(deck[0])
-          deck.splice(0, 1);
+          cards.push(drawPile[0])
+          drawPile.splice(0, 1);
         }
 
         io.to(player.socketId).emit("getCards", cards)
       })
-      console.log(deck);
+      console.log(drawPile);
 
     }
 
   });
+
+
 
 
 

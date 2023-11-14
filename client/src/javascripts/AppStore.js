@@ -48,6 +48,12 @@ export function getAvailableMatches() {
     });
 };
 
+export function requestTurn(card) {
+    get(socketIO).emit("requestTurn", get(playerName), card, (ok) => {
+        console.log(ok)
+    });
+};
+
 
 export function createGame(amountOfPlayers) {
     get(socketIO).emit("createGame", get(playerName), amountOfPlayers, (response) => {

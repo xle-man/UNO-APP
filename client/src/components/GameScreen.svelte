@@ -1,7 +1,7 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, cardsData } from "../javascripts/AppStore";
+    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, cardsData, requestTurn } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
     let cards = [];
@@ -27,12 +27,18 @@
         quitMatch();
         switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
     }
+
+    const onRequestTurn = (card) =>
+    {
+        console.log("siu")
+        requestTurn(card)
+    }
 </script>
 
 <div>
     <ul>
         {#each cards as card}
-            <li>{card.color} {card.symbol}</li>
+            <li><button on:click={() => {onRequestTurn(card)}}>{card.color} {card.symbol}</button></li>
         {/each}
     </ul>
 </div>
