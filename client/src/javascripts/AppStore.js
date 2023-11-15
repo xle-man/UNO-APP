@@ -30,7 +30,9 @@ export const gameScreenData = writable({
     playedCards: []
 });
 
-export const cardsData = writable({
+export const cardsData = writable([]);
+
+export const topDiscard = writable({
     
 });
 
@@ -49,8 +51,11 @@ export function getAvailableMatches() {
 };
 
 export function requestTurn(card) {
-    get(socketIO).emit("requestTurn", get(playerName), card, (ok) => {
+    get(socketIO).emit("requestTurn", get(playerName), card, (ok, discard, cards) => {
         console.log(ok)
+        console.log(discard)
+        console.log(cards)
+        cardsData.set(cards)
     });
 };
 

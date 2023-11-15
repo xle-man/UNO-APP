@@ -1,26 +1,20 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, cardsData, requestTurn } from "../javascripts/AppStore";
+    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, cardsData, requestTurn, topDiscard} from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
     let cards = [];
     onMount(() => {
-        get(socketIO).on("getCards", (data) => {
-            cards = data;
-            console.log(cardsData)
+        get(socketIO).on("getCards", (data, discard) => {
+            cardsData.set(data);
+            topDiscard.set(discard);
+            console.log(get(cardsData));
             console.log(data);
-        });
-        get(socketIO).on("startGame", () => {
-            switchScreen(CONSTANTS.SCREEN.GAME_SCREEN);
+            console.log(get(topDiscard));
         });
     });
 
-
-    onDestroy(() => {
-        get(socketIO).off("updateWaitingForGameData");
-        get(socketIO).off("startGame");
-    });
 
 
     function onQuitMatch() {
@@ -37,7 +31,7 @@
 
 <div>
     <ul>
-        {#each cards as card}
+        {#each $cardsData as card}
             <li><button on:click={() => {onRequestTurn(card)}}>{card.color} {card.symbol}</button></li>
         {/each}
     </ul>

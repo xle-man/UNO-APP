@@ -13,6 +13,7 @@ let order;
 let discardPile = [];
 let currentPlayer = 0;
 let players = [];
+let playerCards = [];
 
 const app = express();
 let drawPile = [];
@@ -111,7 +112,22 @@ io.on("connection", (socket) => {
       if(discardPile[0].color == card.color || discardPile[0].symbol == card.symbol)
       {
         console.log("siuu")
-        callback(true);
+        console.log(card);
+        console.log(playerCards[index]);
+        let cardIndex = -1
+        for(let i = 0; i < playerCards[index].length; i++)
+        {
+          console.log(playerCards[index][i]);
+          if(card.color == playerCards[index][i].color && card.symbol == playerCards[index][i].symbol)
+          {
+            cardIndex = i;
+          }
+        }
+        
+        console.log(cardIndex)
+        playerCards[index].splice(cardIndex, 1);
+        discardPile.splice(0, 0, card);
+        callback(true, discardPile[0], playerCards[index]);
       }
       else
       {
@@ -220,7 +236,7 @@ io.on("connection", (socket) => {
         if(drawPile[0].color != CONSTANTS.COLORS.WILD)
         {
           discardPile.push(drawPile[0])
-          drawPile.splice(0, 1);
+          drawPile.splice(0,1);
           break;
         }
         else
@@ -232,6 +248,7 @@ io.on("connection", (socket) => {
       
       console.log("Center: ", discardPile)
       
+      
       currentPlayer = 0;
       updatedPlayersList.forEach((player) => {
         let cards = [];
@@ -239,8 +256,8 @@ io.on("connection", (socket) => {
           cards.push(drawPile[0])
           drawPile.splice(0, 1);
         }
-
-        io.to(player.socketId).emit("getCards", cards)
+        playerCards.push(cards);
+        io.to(player.socketId).emit("getCards", cards, discardPile[0])
       })
       console.log(drawPile);
 
