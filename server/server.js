@@ -38,8 +38,23 @@ app.get("/", (req, res) => {
 });
 let id;
 
-function initalizeGame() {
+function distributeCards(updatedPlayersList) {
+  updatedPlayersList.forEach((player) => {
+    let cards = [];
+    for (let i = 0; i < 7; i++) {
+      cards.push(drawPile[0])
+      drawPile.splice(0, 1);
+    }
+    playerCards.push(cards);
+  })
+  console.log(drawPile);
+}
 
+function sendCardsToPlayers(updatedPlayersList) {
+  updatedPlayersList.forEach((player, ind) => {
+    io.to(player.socketId).emit("getCards", playerCards[ind], discardPile[0])
+  })
+  console.log(drawPile);
 }
 
 
@@ -127,7 +142,9 @@ io.on("connection", (socket) => {
         console.log(cardIndex)
         playerCards[index].splice(cardIndex, 1);
         discardPile.splice(0, 0, card);
+        sendCardsToPlayers();
         callback(true, discardPile[0], playerCards[index]);
+
       }
       else
       {
@@ -250,16 +267,9 @@ io.on("connection", (socket) => {
       
       
       currentPlayer = 0;
-      updatedPlayersList.forEach((player) => {
-        let cards = [];
-        for (let i = 0; i < 7; i++) {
-          cards.push(drawPile[0])
-          drawPile.splice(0, 1);
-        }
-        playerCards.push(cards);
-        io.to(player.socketId).emit("getCards", cards, discardPile[0])
-      })
-      console.log(drawPile);
+      distributeCards(updatedPlayersList);
+      sendCardsToPlayers(updatedPlayersList);
+
 
     }
 
