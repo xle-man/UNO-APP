@@ -7,6 +7,7 @@ const path = require("path");
 const db = require("./javascript/firebase");
 const CONSTANTS = require("./javascript/constants");
 const { collection, getDocs, addDoc, updateDoc, getDoc, doc, deleteDoc } = require("firebase/firestore");
+const { constants } = require("buffer");
 
 const PORT = process.env.PORT || 3000;
 let order;
@@ -142,7 +143,19 @@ io.on("connection", (socket) => {
         console.log(cardIndex)
         playerCards[index].splice(cardIndex, 1);
         discardPile.splice(0, 0, card);
-        sendCardsToPlayers();
+        sendCardsToPlayers(players);
+
+        if(card.symbol == CONSTANTS.SYMBOL.REVERSE)
+        {
+          order *= -1;
+        }
+        if(card.symbol != CONSTANTS.SYMBOL.REVERSE && players.length > 2)
+        {
+          currentPlayer += order;
+          if(currentPlayer >= players.length) currentPlayer = 0;
+          else if(currentPlayer < 0) currentPlayer = players.length - 1;
+
+        }
         callback(true, discardPile[0], playerCards[index]);
 
       }

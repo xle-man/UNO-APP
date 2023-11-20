@@ -53,4 +53,4 @@ const CARDS = [
 ];
 Object.freeze(CARDS);
 
-module.exports = { GAME_STATES, ORDER, CARDS, COLORS };
+module.exports = { GAME_STATES, ORDER, CARDS, COLORS, SYMBOL };
