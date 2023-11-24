@@ -8,7 +8,7 @@ export const isSocketConnected = writable(false);
 export const socketIO = writable(null);
 
 export const alertData = writable({
-    type: "INFO", 
+    type: "INFO",
     message: "",
     time: 0
 });
@@ -33,11 +33,11 @@ export const gameScreenData = writable({
 export const cardsData = writable([]);
 
 export const topDiscard = writable({
-    
+
 });
 
 export function switchScreen(screen) {
-    navigate(`/${screen}`, {replace: true});
+    navigate(`/${screen}`, { replace: true });
 };
 
 
@@ -59,11 +59,22 @@ export function requestTurn(card) {
     });
 };
 
+export function drawCard() {
+    get(socketIO).emit("drawCard", get(playerName), (ok, cards) => {
+        console.log(ok)
+        if (ok) {
+            console.log(cards)
+            cardsData.set(cards)
+        }
+
+    });
+};
+
 
 export function createGame(amountOfPlayers) {
     get(socketIO).emit("createGame", get(playerName), amountOfPlayers, (response) => {
         console.log("createGame (result):", response.result);
-        if(response.result) {
+        if (response.result) {
             console.log("createGame (data):", response.data);
             switchScreen(CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN);
             waitingForPlayersScreenData.update(value => {
@@ -83,7 +94,7 @@ export function createGame(amountOfPlayers) {
 export function joinToGame(matchID) {
     get(socketIO).emit("joinToGame", get(playerName), matchID, (response) => {
         console.log("joinToGame (result):", response.result);
-        if(response.result) {
+        if (response.result) {
             console.log("joinToGame (data):", response.data);
             switchScreen(CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN);
             waitingForPlayersScreenData.update(value => {

@@ -51,11 +51,30 @@ function distributeCards(updatedPlayersList) {
   console.log(drawPile);
 }
 
+function nextPlayer() {
+  currentPlayer += order;
+  if (currentPlayer >= players.length) currentPlayer = 0;
+  else if (currentPlayer < 0) currentPlayer = players.length - 1;
+}
+
 function sendCardsToPlayers(updatedPlayersList) {
   updatedPlayersList.forEach((player, ind) => {
     io.to(player.socketId).emit("getCards", playerCards[ind], discardPile[0])
   })
   console.log(drawPile);
+}
+
+function getPlayerIndex(playerName) {
+  let index = -1;
+  console.log("Player name: ", playerName)
+  players.forEach((player => {
+    if (player.name == playerName) {
+      index = players.indexOf(player);
+    }
+  }))
+  console.log(index);
+  return (index);
+
 }
 
 
@@ -112,63 +131,63 @@ io.on("connection", (socket) => {
     callback(listOfAvaiableMatches);
   });
 
-  socket.on("requestTurn", async(playerName, card, callback) => {
+  socket.on("requestTurn", async (playerName, card, callback) => {
     console.log("joł")
-    let index = -1;
-    console.log("Player name: ", playerName)
-    players.forEach((player => {
-      if(player.name == playerName)
-      {
-        index = players.indexOf(player);
-      }
-    }))
-    console.log(index);
-    if(index == currentPlayer)
-    {
-      if(discardPile[0].color == card.color || discardPile[0].symbol == card.symbol)
-      {
+    let index = getPlayerIndex(playerName);
+    if (index == currentPlayer) {
+      if (discardPile[0].color == card.color || discardPile[0].symbol == card.symbol) {
         console.log("siuu")
         console.log(card);
         console.log(playerCards[index]);
         let cardIndex = -1
-        for(let i = 0; i < playerCards[index].length; i++)
-        {
+        for (let i = 0; i < playerCards[index].length; i++) {
           console.log(playerCards[index][i]);
-          if(card.color == playerCards[index][i].color && card.symbol == playerCards[index][i].symbol)
-          {
+          if (card.color == playerCards[index][i].color && card.symbol == playerCards[index][i].symbol) {
             cardIndex = i;
           }
         }
-        
+
         console.log(cardIndex)
         playerCards[index].splice(cardIndex, 1);
         discardPile.splice(0, 0, card);
         sendCardsToPlayers(players);
 
-        if(card.symbol == CONSTANTS.SYMBOL.REVERSE)
-        {
+        if (card.symbol == CONSTANTS.SYMBOL.REVERSE) {
           order *= -1;
         }
-        if(card.symbol != CONSTANTS.SYMBOL.REVERSE && players.length > 2)
-        {
-          currentPlayer += order;
-          if(currentPlayer >= players.length) currentPlayer = 0;
-          else if(currentPlayer < 0) currentPlayer = players.length - 1;
+        if (card.symbol != CONSTANTS.SYMBOL.REVERSE || players.length > 2) {
+          nextPlayer();
+
 
         }
         callback(true, discardPile[0], playerCards[index]);
 
       }
-      else
-      {
+      else {
         console.log("bruh")
         callback(false);
       }
     }
-    else
-    {
+    else {
       console.log("")
-        callback(false);
+      callback(false);
+    }
+  });
+
+  socket.on("drawCard", async (playerName, callback) => {
+    console.log("joł")
+    let index = getPlayerIndex(playerName);
+    if (index == currentPlayer) {
+      playerCards[index].push(drawPile[0]);
+      drawPile.splice(0, 1);
+      nextPlayer();
+      callback(true, playerCards[index]);
+      
+
+    }
+    else {
+      console.log("")
+      callback(false);
     }
   });
 
@@ -261,24 +280,21 @@ io.on("connection", (socket) => {
       let temp = CONSTANTS.CARDS;
       drawPile = shuffleArray([...temp])
       order = 1;
-      while(true)
-      {
-        if(drawPile[0].color != CONSTANTS.COLORS.WILD)
-        {
+      while (true) {
+        if (drawPile[0].color != CONSTANTS.COLORS.WILD) {
           discardPile.push(drawPile[0])
-          drawPile.splice(0,1);
+          drawPile.splice(0, 1);
           break;
         }
-        else
-        {
+        else {
           drawPile.push(drawPile[0])
           drawPile.splice(0, 1);
         }
       }
-      
+
       console.log("Center: ", discardPile)
-      
-      
+
+
       currentPlayer = 0;
       distributeCards(updatedPlayersList);
       sendCardsToPlayers(updatedPlayersList);
