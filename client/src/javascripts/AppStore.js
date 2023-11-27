@@ -53,9 +53,14 @@ export function getAvailableMatches() {
 export function requestTurn(card) {
     get(socketIO).emit("requestTurn", get(playerName), card, (ok, discard, cards) => {
         console.log(ok)
-        console.log(discard)
-        console.log(cards)
-        cardsData.set(cards)
+        if(ok)
+        {
+            console.log(ok)
+            console.log(discard)
+            console.log(cards)
+            cardsData.set(cards)
+        }
+        
     });
 };
 

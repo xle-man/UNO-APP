@@ -35,10 +35,11 @@
 </script>
 
 <div>
-    <ul>
-        <li><button on:click={() => {onDrawCard()}}>Draw a card</button></li>
+    <button on:click={() => {onDrawCard()}}>Draw a card</button>
+    <p>&#160;</p>
+    <ol>
         {#each $cardsData as card}
             <li><button on:click={() => {onRequestTurn(card)}}>{card.color} {card.symbol}</button></li>
         {/each}
-    </ul>
+    </ol>
 </div>

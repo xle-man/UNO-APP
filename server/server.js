@@ -44,11 +44,14 @@ function distributeCards(updatedPlayersList) {
     let cards = [];
     for (let i = 0; i < 7; i++) {
       cards.push(drawPile[0])
+      console.log(drawPile[0]);
       drawPile.splice(0, 1);
+      
     }
     playerCards.push(cards);
+    
   })
-  console.log(drawPile);
+  
 }
 
 function nextPlayer() {
@@ -135,7 +138,7 @@ io.on("connection", (socket) => {
     console.log("joł")
     let index = getPlayerIndex(playerName);
     if (index == currentPlayer) {
-      if (discardPile[0].color == card.color || discardPile[0].symbol == card.symbol) {
+      if (discardPile[0].color == card.color || discardPile[0].symbol == card.symbol || card.color == CONSTANTS.COLORS.WILD) {
         console.log("siuu")
         console.log(card);
         console.log(playerCards[index]);
@@ -146,20 +149,28 @@ io.on("connection", (socket) => {
             cardIndex = i;
           }
         }
-
         console.log(cardIndex)
         playerCards[index].splice(cardIndex, 1);
         discardPile.splice(0, 0, card);
-        sendCardsToPlayers(players);
 
         if (card.symbol == CONSTANTS.SYMBOL.REVERSE) {
           order *= -1;
         }
         if (card.symbol != CONSTANTS.SYMBOL.REVERSE || players.length > 2) {
           nextPlayer();
-
-
         }
+
+        if(card.symbol == CONSTANTS.SYMBOL.DRAW2)
+        {
+          playerCards.push(drawPile[0], drawPile[1]);
+          drawPile.splice(0,2)
+        }
+        else if(card.symbol == CONSTANTS.SYMBOL.DRAW4)
+        {
+          playerCards.push(drawPile[0], drawPile[1], drawPile[2], drawPile[3]);
+          drawPile.splice(0,4)
+        }
+        sendCardsToPlayers(players);
         callback(true, discardPile[0], playerCards[index]);
 
       }
