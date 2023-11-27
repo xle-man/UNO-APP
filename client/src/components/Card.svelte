@@ -1,12 +1,19 @@
 <script>
     import { get } from "svelte/store";
     export let color;
-    export let special;
+    export let isSpecial;
     export let symbol;
 </script>
 
-<div>
+
+<div class="card-container">
     Color: {color}
-    Special: {special}
+    Special: {isSpecial}
     Symbol: {symbol}
 </div>
+
+<style>
+    .card-container {
+        border: 2px solid black;
+    }
+</style>

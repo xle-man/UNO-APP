@@ -25,7 +25,15 @@ export const listOfMatchesScreenData = writable({
 
 export const gameScreenData = writable({
     players: [],
-    player: {},
+    player: {
+        cards: [
+            {
+                color: "RED",
+                isSpecial: false,
+                symbol: "0"
+            }
+        ]
+    },
     activeTurn: "",
     playedCards: []
 });
