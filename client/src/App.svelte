@@ -1,7 +1,7 @@
 <script>
   import { Router, Route } from "svelte-routing";
   import { io } from "socket.io-client";
-  import { isSocketConnected, socketIO } from "./javascripts/AppStore";
+  import { isSocketConnected, screen, socketIO } from "./javascripts/AppStore";
   import CONSTANTS from "./javascripts/Constants";
 
   import Alert from "./components/Alert.svelte";
@@ -9,8 +9,6 @@
   import MainScreen from "./components/MainScreen.svelte";
   import WaitingForGameScreen from "./components/WaitingForGameScreen.svelte";
   import ListOfMatchesScreen from "./components/ListOfMatchesScreen.svelte";
-
-  export let url;
 
   let socket = io(CONSTANTS.SERVER_URL);
   socketIO.set(socket);
@@ -33,23 +31,33 @@
 
 </script>
 
-{#if $isSocketConnected}
-  <Router {url}>
-    <Route path="/">
+<div class="main-container">
+  {#if $isSocketConnected}
+    {#if $screen == CONSTANTS.SCREEN.MAIN_SCREEN}
       <MainScreen />
-    </Route>
-    <Route path="/game">
+    {:else if $screen == CONSTANTS.SCREEN.GAME_SCREEN}
       <GameScreen />
-    </Route>
-    <Route path="/waitingForGame">
+    {:else if $screen == CONSTANTS.SCREEN.WAITING_FOR_GAME_SCREEN}
       <WaitingForGameScreen />
-    </Route>
-    <Route path="/listOfMatches">
+    {:else if $screen == CONSTANTS.SCREEN.LIST_OF_MATCHES}
       <ListOfMatchesScreen />
-    </Route>
-  </Router>
-{:else}
-  <div>Connecting to the server...</div>
-{/if}
+    {/if}
+  {:else}
+    <div>Connecting to the server...</div>
+  {/if}
+</div>
 
 <Alert />
+
+
+<style>
+  .main-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(227, 227, 227); 
+    /* background-color: rgb(29, 29, 35);  */
+  }
+</style>

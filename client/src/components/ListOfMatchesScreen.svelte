@@ -4,7 +4,6 @@
     import { getAvailableMatches, listOfMatchesScreenData, socketIO, joinToGame, switchScreen } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
-
     onMount(() => {
         get(socketIO).on("updateAvailableMatches", (list) => {
             listOfMatchesScreenData.update((data) => {

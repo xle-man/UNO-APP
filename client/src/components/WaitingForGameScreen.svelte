@@ -1,9 +1,8 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen } from "../javascripts/AppStore";
+    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
-
 
     onMount(() => {
         get(socketIO).on("updateWaitingForGameData", (data) => {
@@ -13,8 +12,15 @@
                 return value;
             });
         });
-
-        get(socketIO).on("startGame", () => {
+        get(socketIO).on("startGame", (data) => {
+            console.log("Init data:", data);
+            gameScreenData.update((value) => {
+                value.match.amountOfAvailableCards = data.amountOfAvailableCards;
+                value.match.activePlayer = data.activePlayer;
+                value.match.players = data.players;
+                value.player = data.player;
+                return value;
+            });
             switchScreen(CONSTANTS.SCREEN.GAME_SCREEN);
         });
     });

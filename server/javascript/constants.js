@@ -5,11 +5,13 @@ const GAME_STATES = {
 };
 Object.freeze(GAME_STATES);
 
+
 const ORDER = {
   CLOCKWISE: "CLOCKWISE",
   COUNTERCLOCKWISE: "COUNTERCLOCKWISE"
 }
 Object.freeze(ORDER);
+
 
 const COLORS = {
   RED: "RED",
@@ -20,6 +22,7 @@ const COLORS = {
 }
 Object.freeze(COLORS);
 
+
 const SYMBOL = {
   SKIP: "SKIP",
   REVERSE: "REVERSE",
@@ -29,21 +32,23 @@ const SYMBOL = {
 }
 Object.freeze(SYMBOL);
 
+
 const generateCards = (color) =>{
   let output = [];
   for (let i = 0; i < 10; i++){
-    output.push({color: color, isSpecial: false, symbol: i});
+    output.push({src: `${color}_${i}`, color: color, isSpecial: false, symbol: i});
   }
   for (const [key, value] of Object.entries(SYMBOL)) {
     if (value === "CHANGE_COLOR" || value === "DRAW4") {
-      output.push({color: COLORS.WILD,isSpecial: true, symbol: value})
+      output.push({src: `${COLORS.WILD}_${value}`, color: COLORS.WILD, isSpecial: true, symbol: value})
     }else{
-      output.push({color: color, isSpecial: true, symbol: value});
+      output.push({src: `${color}_${value}`, color: color, isSpecial: true, symbol: value});
     }
   }
 
   return output;
 }
+
 
 const CARDS = [
   ...generateCards("RED"),
@@ -53,4 +58,5 @@ const CARDS = [
 ];
 Object.freeze(CARDS);
 
-module.exports = { GAME_STATES, ORDER, CARDS };
+
+module.exports = { GAME_STATES, ORDER, CARDS, COLORS, SYMBOL };

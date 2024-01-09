@@ -3,7 +3,6 @@
     import { playerName, switchScreen, alertData, createGame } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
-
     let showDialog = get(playerName) ? false : true;
     let playerNameInputValue;
     const amountOfPlayersButtons = writable([
@@ -24,7 +23,7 @@
 
     function setName() {
         if(!playerNameInputValue) {
-            alertData.set({type: CONSTANTS.ALERT_TYPES.INFO, message: "Player name is required.", time: 3000});
+            alertData.set({type: CONSTANTS.ALERT_TYPE.INFO, message: "Player name is required.", time: 3000});
             return;
         }
         playerName.set(playerNameInputValue);
@@ -37,7 +36,7 @@
     }
 
 
-    function onJoinGame() {
+    function onJoinToGame() {
         switchScreen(CONSTANTS.SCREEN.LIST_OF_MATCHES);
     }
 
@@ -73,7 +72,7 @@
         </div>
     </div>
     <div>
-        <button on:click={onJoinGame}>JOIN</button>
+        <button on:click={onJoinToGame}>JOIN</button>
     </div>
 </div>
 

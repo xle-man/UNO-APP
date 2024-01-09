@@ -18,7 +18,7 @@
 </script>
 
 {#if $alertData.time > 0}
-    <div class="alert" in:fly={{ x: 200, duration: 500}} out:fade={{duration: 500}} > <!--z-index[100]-->
+    <div class="alert" in:fly={{ x: -200, duration: 500}} out:fade={{duration: 500}} > <!--z-index[100]-->
         {$alertData.message}
     </div>
 {/if}
@@ -27,8 +27,8 @@
     .alert {
         position: fixed;
         z-index: 100;
-        bottom: 20px;
-        right: 20px;
+        bottom: 10px;
+        left: 10px;
         padding: 10px 20px;
         background-color: lightgray;
     }
