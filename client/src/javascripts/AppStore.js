@@ -227,6 +227,16 @@ export function selectCard(index) {
     }
 }
 
+export function playCard() {
+    get(socketIO).emit("playCard", matchID, get(gameScreenData).selectedCardIndex, (response) => {
+        console.log("playCard (result):", response.result);
+        if (response.result === false) {
+            console.log("playCard (reason):", response.reason);
+            setAlert(CONSTANTS.ALERT_TYPE.INFO, `Action failed: \n ${response.reason}.`, 5000);
+        }
+    });
+}
+
 
 // ----- stare funkcje Oskara ----- //
 // export function requestTurn(card) {

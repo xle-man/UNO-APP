@@ -1,7 +1,7 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData, playerName, selectCard, setGameAlert, alertData} from "../javascripts/AppStore";
+    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData, playerName, selectCard, setGameAlert, alertData, setAlert, playCard} from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
     import GameAlert from "./GameAlert.svelte";
@@ -12,7 +12,12 @@
 
 
     function onConfirmAction() {
-
+        if ($gameScreenData.selectedCardIndex === null) {
+            setAlert(CONSTANTS.ALERT_TYPE.INFO, "To confirm action, select a card.", 3000);
+            return;
+        }
+        
+        playCard();
     }
 
 
@@ -66,7 +71,7 @@
                 src={`./assets/images/cards/${card.src}.png`} 
                 alt={`${card.src}_CARD`} 
                 class="card-img" 
-                style={$gameScreenData.selectedCardIndex != null ? $gameScreenData.selectedCardIndex == index ? "filter: none;" : "filter: grayscale(0.9);" : ""}
+                style={$gameScreenData.selectedCardIndex != null ? $gameScreenData.selectedCardIndex == index ? "filter: none;" : "filter: grayscale(0);" : ""}
             >
         </div>
     {/each}
@@ -76,7 +81,7 @@
     <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id}>
         DRAW
     </button>
-    <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id}>
+    <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id} on:click={onConfirmAction}>
         CONFIRM
     </button>
 </div>
@@ -213,7 +218,7 @@
 
 
     .selected-card {
-        transform: var(--card-transform) scale(1.05);
+        transform: var(--card-transform) scale(1.1);
         background: linear-gradient(var(--angle), #818181,  #adadad, #ffffff);
         animation: selected-card 3s linear infinite;
     }
