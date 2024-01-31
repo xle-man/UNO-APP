@@ -41,11 +41,22 @@ const ORDER = {
 Object.freeze(ORDER);
 
 
+const COLORS = {
+    RED: "RED",
+    YELLOW: "YELLOW",
+    GREEN: "GREEN",
+    BLUE: "BLUE",
+    WILD: "WILD"
+  }
+  Object.freeze(COLORS);
+
+
 export default {
     SERVER_URL,
     SCREEN,
     TYPE_OF_GAME_SELECTION,
     ALERT_TYPE,
     GAME_STATE,
-    ORDER
+    ORDER,
+    COLORS,
 }

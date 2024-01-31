@@ -15,7 +15,9 @@
         get(socketIO).on("startGame", (data) => {
             console.log("Init data:", data);
             gameScreenData.update((value) => {
+                value.matchID = data.matchID;
                 value.match.amountOfAvailableCards = data.amountOfAvailableCards;
+                value.match.playedCards = data.playedCards;
                 value.match.activePlayer = data.activePlayer;
                 value.match.players = data.players;
                 value.player = data.player;

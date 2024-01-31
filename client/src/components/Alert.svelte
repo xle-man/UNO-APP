@@ -19,7 +19,7 @@
 
 {#if $alertData.time > 0}
     <div class="alert" in:fly={{ x: -200, duration: 500}} out:fade={{duration: 500}} > <!--z-index[100]-->
-        {$alertData.message}
+        {@html $alertData.message}
     </div>
 {/if}
 

@@ -40,11 +40,41 @@ export const gameScreenData = writable({
         amountOfAvailableCards: 0,
         order: CONSTANTS.ORDER.CLOCKWISE,
         winner: "",
+        wildColor: null
     },
     player: {
         id: "",
         amountOfCards: 0,
         cards: []
+    },
+    wildColor: {
+        isVisible: false,
+        color: null,
+        topOffset: null,
+        hex: null,
+        options: [
+            {
+                color: CONSTANTS.COLORS.BLUE,
+                hex: "#0974b7",
+                topOffset: 5,
+            },
+            {
+                color: CONSTANTS.COLORS.GREEN,
+                hex: "#85c042",
+                topOffset: 35,
+            },
+            {
+                color: CONSTANTS.COLORS.RED,
+                hex: "#db3a25",
+                topOffset: 65,
+            },
+            {
+                color: CONSTANTS.COLORS.YELLOW,
+                hex: "#fed439",
+                topOffset: 95,
+            }
+        ],
+         
     }
 });
 
@@ -121,13 +151,6 @@ export const gameScreenData = writable({
 //     }
 // });
 // ------------------------------------------------- //
-
-
-export const cardsData = writable([]);
-
-export const topDiscard = writable({
-
-});
 
 
 export function switchScreen(value) {
@@ -212,12 +235,24 @@ export function selectCard(index) {
         if(get(gameScreenData).selectedCardIndex == index) {
             gameScreenData.update(value => {
                 value.selectedCardIndex = null;
+                Object.assign(value.wildColor, {
+                    isVisible: false,
+                    color: null,
+                    topOffset: null,
+                    hex: null,
+                });
                 return value;
             });
         }
         else {
             gameScreenData.update(value => {
                 value.selectedCardIndex = index;
+                Object.assign(value.wildColor, {
+                    isVisible: get(gameScreenData).player.cards[index].color == CONSTANTS.COLORS.WILD,
+                    color: null,
+                    topOffset: null,
+                    hex: null,
+                });
                 return value;
             });
         }
@@ -228,38 +263,38 @@ export function selectCard(index) {
 }
 
 export function playCard() {
-    get(socketIO).emit("playCard", matchID, get(gameScreenData).selectedCardIndex, (response) => {
+    if (get(gameScreenData).player.cards[get(gameScreenData).selectedCardIndex].color == CONSTANTS.COLORS.WILD && get(gameScreenData).wildColor.color == null) {
+        setAlert(CONSTANTS.ALERT_TYPE.INFO, `To confirm action, select a color.`, 3000);
+        return;
+    }
+
+    get(socketIO).emit("playCard", get(gameScreenData).matchID, get(gameScreenData).selectedCardIndex, get(gameScreenData).wildColor.color, (response) => {
         console.log("playCard (result):", response.result);
         if (response.result === false) {
             console.log("playCard (reason):", response.reason);
-            setAlert(CONSTANTS.ALERT_TYPE.INFO, `Action failed: \n ${response.reason}.`, 5000);
+            setAlert(CONSTANTS.ALERT_TYPE.INFO, `Action failed: <br> ${response.reason}`, 5000);
+        }
+        else {
+            gameScreenData.update(value => {
+                value.selectedCardIndex = null;
+                Object.assign(value.wildColor, {
+                    isVisible: false,
+                    color: null,
+                    topOffset: null,
+                    hex: null,
+                });
+                return value;
+            })
         }
     });
 }
 
-
-// ----- stare funkcje Oskara ----- //
-// export function requestTurn(card) {
-//     get(socketIO).emit("requestTurn", get(playerName), card, (ok, discard, cards) => {
-//         console.log(ok)
-//         if(ok)
-//         {
-//             console.log(ok)
-//             console.log(discard)
-//             console.log(cards)
-//             cardsData.set(cards)
-//         }
-        
-//     });
-// };
-// export function drawCard() {
-//     get(socketIO).emit("drawCard", get(playerName), (ok, cards) => {
-//         console.log(ok)
-//         if (ok) {
-//             console.log(cards)
-//             cardsData.set(cards)
-//         }
-
-//     });
-// };
-// -------------------------------- //
+export function changeWildColorOption(option) {
+    console.log(option);
+    gameScreenData.update(value => {
+        value.wildColor.color = option.color,
+        value.wildColor.topOffset = option.topOffset;
+        value.wildColor.hex = option.hex;
+        return value;
+    })
+}
