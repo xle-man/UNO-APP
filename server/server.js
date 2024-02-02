@@ -316,6 +316,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playCard", async (matchID, selectedCardIndex, wildColor, callback) => {
+    // getting match data from datastore
     const docRef = doc(db, "matches", matchID);
     let match = await getDoc(docRef).then((snap) => snap.data());
 
@@ -344,7 +345,10 @@ io.on("connection", (socket) => {
       callback(dataToSend);
       return;
     }
-    
+
+    // reset wild color from previous turn (not always needed)
+    match.wildColor = null;
+
     // handling special effects od cards
     if(cardToPlay.isSpecial) {
       if (cardToPlay.symbol == CONSTANTS.SYMBOL.REVERSE) {
@@ -386,9 +390,33 @@ io.on("connection", (socket) => {
         match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
         match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
       }
+      else if (cardToPlay.symbol == CONSTANTS.SYMBOL.CHANGE_COLOR) {
+        match.wildColor = wildColor;
+      }
+      else if (cardToPlay.symbol == CONSTANTS.SYMBOL.DRAW4) {
+        const indexOfActivePlayer = getIndexOfPlayer(match.activePlayer, match.players);
+        let indexOfNextActivePlayer = null;
+        if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
+            if(indexOfActivePlayer == match.players.length-1)
+              indexOfNextActivePlayer = 0;
+            else
+              indexOfNextActivePlayer = indexOfActivePlayer + 1;
+        }
+        else {
+          if(indexOfActivePlayer == 0)
+          indexOfNextActivePlayer = match.players.length - 1;
+        else
+          indexOfNextActivePlayer = indexOfActivePlayer - 1;
+        }
+        match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
+        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
+        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
+        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
+        match.wildColor = wildColor;
+      }
     }
 
-    
     // handling of played card
     match.playedCards.unshift(cardToPlay);
     player.cards.splice(selectedCardIndex, 1);
@@ -451,14 +479,105 @@ io.on("connection", (socket) => {
     });
     
 
-
+    // preparing result data as success and calling the callback
     const dataToSend = {
       result: true,
       reason: ""
     };
 
     callback(dataToSend);
-  })
+  });
+
+
+  socket.on("drawCard", async (matchID, callback) => {
+    // getting match data from datastore
+    const docRef = doc(db, "matches", matchID);
+    let match = await getDoc(docRef).then((snap) => snap.data());
+
+    const indexOfPlayer = getIndexOfPlayer(socket.id, match.players);
+    const player = match.players[indexOfPlayer];
+
+    // checking if the player is playing a turn
+    if (match.activePlayer != socket.id) {
+      const dataToSend = {
+        result: false,
+        reason: "It isn't your turn!"
+      };
+  
+      callback(dataToSend);
+      return;
+    }
+
+    // handling of played card
+    player.cards.push(match.availableCards.shift());
+
+    // changing of active player
+    const indexOfActivePlayer = getIndexOfPlayer(match.activePlayer, match.players);
+    let indexOfNextActivePlayer = null;
+    if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
+        if(indexOfActivePlayer == match.players.length-1)
+          indexOfNextActivePlayer = 0;
+        else
+          indexOfNextActivePlayer = indexOfActivePlayer + 1;
+    }
+    else {
+      if(indexOfActivePlayer == 0)
+      indexOfNextActivePlayer = match.players.length - 1;
+    else
+      indexOfNextActivePlayer = indexOfActivePlayer - 1;
+    }
+    match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+
+    
+    // updating of match in datastore
+    await updateDoc(docRef, match);
+
+
+    // prepared data sending to client [remember the security of private data]
+    const updatedGameData = {
+      activePlayer: match.activePlayer,
+      amountOfAvailableCards: match.availableCards.length,
+      players: match.players.map((player) => {
+        return {
+          id: player.socketId,
+          name: player.name,
+          amountOfCards: player.cards.length,
+        };
+      }),
+      playedCards: match.playedCards,
+      wildColor: match.wildColor,
+      order: match.order
+    };
+
+    // emitting of event "updateGameData" to each player in match
+    match.players.forEach(player => {
+      const updatedGameDataToSend = Object.assign(updatedGameData, {
+          player: {
+            id: player.socketId,
+            cards: player.cards,
+            amountOfCards: player.cards.length,
+          },
+        });
+
+        console.log(`${player.name}'s updated gameData to send:`, updatedGameDataToSend);
+
+        try {
+          io.to(player.socketId).emit("updateGameData", updatedGameDataToSend);
+        } catch (error) {
+          console.log("Error while emitting startGame event:", error);
+        }
+    });
+
+
+
+    // preparing result data as success and calling the callback
+    const dataToSend = {
+      result: true,
+      reason: ""
+    };
+
+    callback(dataToSend);
+  });
 
   socket.on("disconnect", () => {
     console.log(`Client disconneted: ${socket.id}`);
@@ -468,3 +587,10 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+
+// ----- TODO ----- //
+// dodać odświeżanie talii kart po wyczerpani się stosu dobierania zarówno w playCard jak i w drawCard
+// dodać obsługę disconnect z clientem
+// dodać mechanikę zgłaszania UNO

@@ -263,6 +263,11 @@ export function selectCard(index) {
 }
 
 export function playCard() {
+    if (get(gameScreenData).selectedCardIndex === null) {
+        setAlert(CONSTANTS.ALERT_TYPE.INFO, "To confirm action, select a card.", 3000);
+        return;
+    }
+    
     if (get(gameScreenData).player.cards[get(gameScreenData).selectedCardIndex].color == CONSTANTS.COLORS.WILD && get(gameScreenData).wildColor.color == null) {
         setAlert(CONSTANTS.ALERT_TYPE.INFO, `To confirm action, select a color.`, 3000);
         return;
@@ -284,10 +289,34 @@ export function playCard() {
                     hex: null,
                 });
                 return value;
-            })
+            });
         }
     });
 }
+
+
+export function drawCard() {
+    get(socketIO).emit("drawCard", get(gameScreenData).matchID, (response) => {
+        console.log("drawCard (result):", response.result);
+        if (response.result === false) {
+            console.log("drawCard (reason):", response.reason);
+            setAlert(CONSTANTS.ALERT_TYPE.INFO, `Action failed: <br> ${response.reason}`, 5000);
+        }
+        else {
+            gameScreenData.update(value => {
+                value.selectedCardIndex = null;
+                Object.assign(value.wildColor, {
+                    isVisible: false,
+                    color: null,
+                    topOffset: null,
+                    hex: null,
+                });
+                return value;
+            });
+        }
+    });
+}
+
 
 export function changeWildColorOption(option) {
     console.log(option);

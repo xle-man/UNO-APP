@@ -2,11 +2,11 @@
     import { onDestroy, onMount } from "svelte";
     import { fade, fly } from 'svelte/transition';
     import { get } from "svelte/store";
-    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData, playerName, selectCard, setGameAlert, alertData, setAlert, playCard, changeWildColorOption} from "../javascripts/AppStore";
+    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData, playerName, selectCard, setGameAlert, alertData, setAlert, playCard, changeWildColorOption, drawCard} from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
     import GameAlert from "./GameAlert.svelte";
-   import IconUser from "./IconUser.svelte";
+    import IconUser from "./IconUser.svelte";
 
 
     onMount(() => {
@@ -27,17 +27,12 @@
 
 
     function onConfirmAction() {
-        if ($gameScreenData.selectedCardIndex === null) {
-            setAlert(CONSTANTS.ALERT_TYPE.INFO, "To confirm action, select a card.", 3000);
-            return;
-        }
-        
         playCard();
     }
 
 
     function onDrawAction() {
-
+        drawCard();
     }
 
 
@@ -120,7 +115,7 @@
         </div>
     {/if}
     <div class="button-container">
-        <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id}>
+        <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id} on:click={onDrawAction}>
             DRAW
         </button>
         <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id} on:click={onConfirmAction}>
@@ -133,17 +128,17 @@
 
 
 <div class="game-container">
+    <div>Amount of available cards: {$gameScreenData.match.amountOfAvailableCards}</div>
     <div class="last-played-card-container">
-        {#if $gameScreenData.match.playedCards.length > 0}
-            <img 
-                src={`./assets/images/cards/${$gameScreenData.match.playedCards[0].src}.png`} 
-                alt={`${$gameScreenData.match.playedCards[0].src}_CARD`}
-                class="last-played-card-img" 
-            >
-        {:else}
-             brak
-        {/if}
+        <img 
+            src={`./assets/images/cards/${$gameScreenData.match.playedCards[0].src}.png`} 
+            alt={`${$gameScreenData.match.playedCards[0].src}_CARD`}
+            class="last-played-card-img" 
+        >
     </div>
+    {#if $gameScreenData.match.wildColor}
+         <div>wild color: {$gameScreenData.match.wildColor}</div>
+    {/if}
 </div>
 
 
@@ -332,7 +327,7 @@
 
 
     .selected-card {
-        transform: var(--card-transform) scale(1.1);
+        transform: var(--card-transform) scale(1.2);
         background: linear-gradient(var(--angle), #818181,  #adadad, #ffffff);
         animation: selected-card 3s linear infinite;
     }
