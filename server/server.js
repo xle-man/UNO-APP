@@ -182,7 +182,7 @@ io.on("connection", (socket) => {
         Object.assign(player, { cards: [], afk: false });
       });
 
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < 1; i++) {
         updatedPlayersList.forEach((player) => {
           player.cards.push(availableCards.shift());
         });
@@ -306,6 +306,30 @@ io.on("connection", (socket) => {
         return;
       }
 
+      if (
+        cardToPlay.symbol === CONSTANTS.SYMBOL.DRAW2 &&
+        match.availableCards.length + match.playedCards.length - 1 < 2
+      ) {
+        const dataToSend = {
+          result: false,
+          reason: "There is no available cards!",
+        };
+
+        callback(dataToSend);
+        return;
+      } else if (
+        cardToPlay.symbol === CONSTANTS.SYMBOL.DRAW4 &&
+        match.availableCards.length + match.playedCards.length - 1 < 4
+      ) {
+        const dataToSend = {
+          result: false,
+          reason: "There is no available cards!",
+        };
+
+        callback(dataToSend);
+        return;
+      }
+
       // handling of played card
       match.playedCards.unshift(cardToPlay);
       player.cards.splice(selectedCardIndex, 1);
@@ -361,15 +385,15 @@ io.on("connection", (socket) => {
           match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
 
           // get cards to next player
-          if (
-            match.availableCards.length <= 2 &&
-            match.availableCards.length > 0
-          ) {
-            for (let i = 0; i <= match.availableCards.length; i++) {
-              match.players[indexOfNextActivePlayer].cards.push(
-                match.availableCards.shift()
-              );
+          for (let i = 0; i < 2; i++) {
+            if (match.availableCards.length === 0) {
+              const lastCard = match.playedCards.shift();
+              match.availableCards = shuffleArray(match.playedCards);
+              match.playedCards = [lastCard];
             }
+            match.players[indexOfNextActivePlayer].cards.push(
+              match.availableCards.shift()
+            );
           }
         } else if (cardToPlay.symbol == CONSTANTS.SYMBOL.CHANGE_COLOR) {
           match.wildColor = wildColor;
@@ -391,16 +415,18 @@ io.on("connection", (socket) => {
           match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
 
           // get cards to next player
-          if (
-            match.availableCards.length <= 4 &&
-            match.availableCards.length > 0
-          ) {
-            for (let i = 0; i <= match.availableCards.length; i++) {
-              match.players[indexOfNextActivePlayer].cards.push(
-                match.availableCards.shift()
-              );
+
+          for (let i = 0; i < 4; i++) {
+            if (match.availableCards.length === 0) {
+              const lastCard = match.playedCards.shift();
+              match.availableCards = shuffleArray(match.playedCards);
+              match.playedCards = [lastCard];
             }
+            match.players[indexOfNextActivePlayer].cards.push(
+              match.availableCards.shift()
+            );
           }
+
           match.wildColor = wildColor;
         }
       }
@@ -585,49 +611,8 @@ io.on("connection", (socket) => {
     callback(dataToSend);
   });
 
-  socket.on("disconnect", async (matchID) => {
+  socket.on("disconnect", async () => {
     console.log(`Client disconneted: ${socket.id}`);
-
-    const docRef = doc(db, "matches", matchID);
-    let match = await getDoc(docRef).then((snap) => snap.data());
-
-    console.log(match);
-    if (match.state === CONSTANTS.GAME_STATES.WAITING_FOR_PLAYERS) {
-      const updatedPlayersList = match.players.filter(
-        (player) => player.socketId != socket.id
-      );
-      console.log("quitMatch (updated list of players):", updatedPlayersList);
-
-      if (updatedPlayersList.length) {
-        await updateDoc(docRef, {
-          players: updatedPlayersList,
-        });
-
-        updateAvailableMatches();
-
-        // prepared data sending to client [remember the security of private data]
-        const dataToSend = {
-          id: `docRef`.id,
-          players: updatedPlayersList.map((player) => {
-            return { name: player.name };
-          }),
-          requiredAmountOfPlayers: match.requiredAmountOfPlayers,
-        };
-
-        updatedPlayersList.forEach((player) => {
-          io.to(player.socketId).emit("updateWaitingForGameData", dataToSend);
-        });
-      } else {
-        await deleteDoc(docRef);
-        updateAvailableMatches();
-      }
-    } else if (match.state === CONSTANTS.GAME_STATES.ACTIVE) {
-      match.players.forEach((el) => {
-        if (el.socketId === socket.id) {
-          el.afk = true;
-        }
-      });
-    }
   });
 });
 

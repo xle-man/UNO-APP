@@ -31,15 +31,6 @@
     isSocketConnected.set(false);
   });
 
-  onDestroy(() => {
-    if(get(waitingForPlayersScreenData).matchID != "") {
-      get(socketIO).emit("disconnect", get(waitingForPlayersScreenData).matchID);
-    }
-    else if(get(gameScreenData).matchID != "") {
-      get(socketIO).emit("disconnect", get(gameScreenData).matchID);
-    }
-  });
-
 </script>
 
 <div class="main-container">
