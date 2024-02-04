@@ -5,7 +5,7 @@ const cors = require("cors");
 const path = require("path");
 
 const db = require("./javascript/firebase");
-const CONSTANTS = require("./javascript/Constants");
+const CONSTANTS = require("./javascript/constants");
 const {
   collection,
   getDocs,
