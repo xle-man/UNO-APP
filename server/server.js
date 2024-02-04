@@ -182,7 +182,7 @@ io.on("connection", (socket) => {
         Object.assign(player, { cards: [] });
       });
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 1; i++) {
         updatedPlayersList.forEach((player) => {
           player.cards.push(availableCards.shift());
         });
@@ -423,6 +423,9 @@ io.on("connection", (socket) => {
       match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
 
       //check winner
+      if (player.cards.length === 0) {
+        match.winner = player.socketId;
+      }
 
       // updating of match in datastore
       await updateDoc(docRef, match);
@@ -591,6 +594,5 @@ server.listen(PORT, () => {
 });
 
 // ----- TODO ----- //
-// dodać odświeżanie talii kart po wyczerpani się stosu dobierania zarówno w playCard jak i w drawCard
 // dodać obsługę disconnect z clientem
 // dodać mechanikę zgłaszania UNO
