@@ -2,10 +2,14 @@ const express = require("express");
 const socketio = require("socket.io");
 const http = require("http");
 const cors = require("cors");
-const path = require("path");
 
 const db = require("./javascript/firebase");
 const CONSTANTS = require("./javascript/constants");
+const {
+  shuffleArray,
+  compareCards,
+  getIndexOfPlayer,
+} = require("./javascript/api");
 const {
   collection,
   getDocs,
@@ -15,7 +19,6 @@ const {
   doc,
   deleteDoc,
 } = require("firebase/firestore");
-const { constants } = require("buffer");
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -27,39 +30,6 @@ const io = socketio(server, {
 });
 
 app.use(cors());
-
-// ----- External functions ----- //
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-function compareCards(pileCard, cardToPlay, wildColor) {
-  if (cardToPlay.color == CONSTANTS.COLORS.WILD) {
-    return true;
-  } else if (cardToPlay.color == pileCard.color) {
-    return true;
-  } else if (cardToPlay.symbol == pileCard.symbol) {
-    return true;
-  } else if (
-    pileCard.color == CONSTANTS.COLORS.WILD &&
-    cardToPlay.color == wildColor
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function getIndexOfPlayer(socketId, players) {
-  for (let i = 0; i < players.length; i++) {
-    if (socketId == players[i].socketId) return i;
-  }
-  return -1;
-}
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -204,7 +174,7 @@ io.on("connection", (socket) => {
       });
       updateAvailableMatches();
 
-      const availableCards = shuffleArray(
+      let availableCards = shuffleArray(
         JSON.parse(JSON.stringify(CONSTANTS.CARDS))
       );
 
@@ -218,17 +188,9 @@ io.on("connection", (socket) => {
         });
       }
 
-      let firstCard = null;
-      for (let i = 0; i < availableCards.length; i++) {
-        if (!availableCards[i].isSpecial) {
-          firstCard = availableCards[i];
-          availableCards.splice(i, 1);
-          break;
-        }
-      }
-
-      // firstCard = shuffleArray(JSON.parse(JSON.stringify(CONSTANTS.CARDS)));
-      // firstCard = firstCard.filter((el) => !el.isSpecial).shift();
+      //choose first card
+      const firstCard = availableCards.filter((el) => !el.isSpecial).shift();
+      availableCards = availableCards.filter((el) => el.src !== firstCard.src);
 
       await updateDoc(docRef, {
         players: updatedPlayersList,
@@ -344,6 +306,17 @@ io.on("connection", (socket) => {
         return;
       }
 
+      // handling of played card
+      match.playedCards.unshift(cardToPlay);
+      player.cards.splice(selectedCardIndex, 1);
+
+      // handling end of availableCards
+      if (match.availableCards.length === 0) {
+        const lastCard = match.playedCards.shift();
+        match.availableCards = shuffleArray(match.playedCards);
+        match.playedCards = [lastCard];
+      }
+
       // reset wild color from previous turn (not always needed)
       match.wildColor = null;
 
@@ -386,12 +359,18 @@ io.on("connection", (socket) => {
             else indexOfNextActivePlayer = indexOfActivePlayer - 1;
           }
           match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
-          match.players[indexOfNextActivePlayer].cards.push(
-            match.availableCards.shift()
-          );
-          match.players[indexOfNextActivePlayer].cards.push(
-            match.availableCards.shift()
-          );
+
+          // get cards to next player
+          if (
+            match.availableCards.length <= 2 &&
+            match.availableCards.length > 0
+          ) {
+            for (let i = 0; i <= match.availableCards.length; i++) {
+              match.players[indexOfNextActivePlayer].cards.push(
+                match.availableCards.shift()
+              );
+            }
+          }
         } else if (cardToPlay.symbol == CONSTANTS.SYMBOL.CHANGE_COLOR) {
           match.wildColor = wildColor;
         } else if (cardToPlay.symbol == CONSTANTS.SYMBOL.DRAW4) {
@@ -410,25 +389,21 @@ io.on("connection", (socket) => {
             else indexOfNextActivePlayer = indexOfActivePlayer - 1;
           }
           match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
-          match.players[indexOfNextActivePlayer].cards.push(
-            match.availableCards.shift()
-          );
-          match.players[indexOfNextActivePlayer].cards.push(
-            match.availableCards.shift()
-          );
-          match.players[indexOfNextActivePlayer].cards.push(
-            match.availableCards.shift()
-          );
-          match.players[indexOfNextActivePlayer].cards.push(
-            match.availableCards.shift()
-          );
+
+          // get cards to next player
+          if (
+            match.availableCards.length <= 4 &&
+            match.availableCards.length > 0
+          ) {
+            for (let i = 0; i <= match.availableCards.length; i++) {
+              match.players[indexOfNextActivePlayer].cards.push(
+                match.availableCards.shift()
+              );
+            }
+          }
           match.wildColor = wildColor;
         }
       }
-
-      // handling of played card
-      match.playedCards.unshift(cardToPlay);
-      player.cards.splice(selectedCardIndex, 1);
 
       // changing of active player
       const indexOfActivePlayer = getIndexOfPlayer(
@@ -478,10 +453,10 @@ io.on("connection", (socket) => {
           },
         });
 
-        console.log(
-          `${player.name}'s updated gameData to send:`,
-          updatedGameDataToSend
-        );
+        // console.log(
+        //   `${player.name}'s updated gameData to send:`,
+        //   updatedGameDataToSend
+        // );
 
         try {
           io.to(player.socketId).emit("updateGameData", updatedGameDataToSend);
@@ -520,7 +495,24 @@ io.on("connection", (socket) => {
     }
 
     // handling of played card
-    player.cards.push(match.availableCards.shift());
+    if (match.availableCards.length > 0) {
+      player.cards.push(match.availableCards.shift());
+    } else {
+      if (match.playedCards.length > 1) {
+        const lastCard = match.playedCards.shift();
+        match.availableCards = shuffleArray(match.playedCards);
+        player.cards.push(match.availableCards.shift());
+        match.playedCards = [lastCard];
+      } else {
+        const dataToSend = {
+          result: false,
+          reason: "There is no available cards!",
+        };
+
+        callback(dataToSend);
+        return;
+      }
+    }
 
     // changing of active player
     const indexOfActivePlayer = getIndexOfPlayer(
@@ -568,10 +560,10 @@ io.on("connection", (socket) => {
         },
       });
 
-      console.log(
-        `${player.name}'s updated gameData to send:`,
-        updatedGameDataToSend
-      );
+      // console.log(
+      //   `${player.name}'s updated gameData to send:`,
+      //   updatedGameDataToSend
+      // );
 
       try {
         io.to(player.socketId).emit("updateGameData", updatedGameDataToSend);
