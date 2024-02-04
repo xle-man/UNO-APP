@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from "svelte";
   import { Router, Route } from "svelte-routing";
   import { io } from "socket.io-client";
-  import { isSocketConnected, screen, socketIO } from "./javascripts/AppStore";
+  import { gameScreenData, isSocketConnected, screen, socketIO, waitingForPlayersScreenData } from "./javascripts/AppStore";
   import CONSTANTS from "./javascripts/Constants";
 
   import Alert from "./components/Alert.svelte";
@@ -10,6 +10,7 @@
   import MainScreen from "./components/MainScreen.svelte";
   import WaitingForGameScreen from "./components/WaitingForGameScreen.svelte";
   import ListOfMatchesScreen from "./components/ListOfMatchesScreen.svelte";
+    import { get } from "svelte/store";
 
   let socket = io(CONSTANTS.SERVER_URL);
   socketIO.set(socket);
@@ -31,7 +32,12 @@
   });
 
   onDestroy(() => {
-    
+    if(get(waitingForPlayersScreenData).matchID != "") {
+      get(socketIO).emit("disconnect", get(waitingForPlayersScreenData).matchID);
+    }
+    else if(get(gameScreenData).matchID != "") {
+      get(socketIO).emit("disconnect", get(gameScreenData).matchID);
+    }
   });
 
 </script>
