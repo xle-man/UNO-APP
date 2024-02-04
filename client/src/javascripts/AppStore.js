@@ -152,6 +152,70 @@ export const gameScreenData = writable({
 // });
 // ------------------------------------------------- //
 
+export function resetWaitingForPlayersScreenData() {
+    waitingForPlayersScreenData.set({
+        matchID: "",
+        players: [],
+        requiredAmountOfPlayers: 0
+    });
+}
+
+export function resetGameScreenData() {
+    gameScreenData.set({
+        matchID: "",
+        selectedCardIndex: null,
+        hint: "",
+        alert: {
+            message: "",
+            isPermanent: false,
+            time: 0
+        },
+        match: {
+            players: [],
+            activePlayer: "",
+            playedCards: [],
+            amountOfAvailableCards: 0,
+            order: CONSTANTS.ORDER.CLOCKWISE,
+            winner: "",
+            wildColor: null
+        },
+        player: {
+            id: "",
+            amountOfCards: 0,
+            cards: []
+        },
+        wildColor: {
+            isVisible: false,
+            color: null,
+            topOffset: null,
+            hex: null,
+            options: [
+                {
+                    color: CONSTANTS.COLORS.BLUE,
+                    hex: "#0974b7",
+                    topOffset: 5,
+                },
+                {
+                    color: CONSTANTS.COLORS.GREEN,
+                    hex: "#85c042",
+                    topOffset: 35,
+                },
+                {
+                    color: CONSTANTS.COLORS.RED,
+                    hex: "#db3a25",
+                    topOffset: 65,
+                },
+                {
+                    color: CONSTANTS.COLORS.YELLOW,
+                    hex: "#fed439",
+                    topOffset: 95,
+                }
+            ],
+             
+        }
+    });
+}
+
 
 export function switchScreen(value) {
     screen.set(value)

@@ -1,7 +1,7 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData } from "../javascripts/AppStore";
+    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData, resetWaitingForPlayersScreenData } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
     onMount(() => {
@@ -23,7 +23,7 @@
                 value.player = data.player;
                 return value;
             });
-            
+            resetWaitingForPlayersScreenData();
             switchScreen(CONSTANTS.SCREEN.GAME_SCREEN);
         });
     });
