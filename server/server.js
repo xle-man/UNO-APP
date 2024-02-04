@@ -37,39 +37,33 @@ function shuffleArray(array) {
   return array;
 }
 
-
 function compareCards(pileCard, cardToPlay, wildColor) {
   if (cardToPlay.color == CONSTANTS.COLORS.WILD) {
     return true;
-  }
-  else if (cardToPlay.color == pileCard.color) {
+  } else if (cardToPlay.color == pileCard.color) {
     return true;
-  }
-  else if (cardToPlay.symbol == pileCard.symbol) {
+  } else if (cardToPlay.symbol == pileCard.symbol) {
     return true;
-  }
-  else if (pileCard.color == CONSTANTS.COLORS.WILD && cardToPlay.color == wildColor) {
+  } else if (
+    pileCard.color == CONSTANTS.COLORS.WILD &&
+    cardToPlay.color == wildColor
+  ) {
     return true;
-  }
-  else {
+  } else {
     return false;
   }
 }
 
-
 function getIndexOfPlayer(socketId, players) {
-  for(let i=0; i<players.length; i++) {
-    if (socketId == players[i].socketId)
-      return i;
+  for (let i = 0; i < players.length; i++) {
+    if (socketId == players[i].socketId) return i;
   }
   return -1;
 }
 
-
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-
 
 // ----- Socket ----- //
 io.on("connection", (socket) => {
@@ -99,7 +93,9 @@ io.on("connection", (socket) => {
     io.emit("updateAvailableMatches", listOfAvaiableMatches);
   };
 
-  socket.on("createGame", async (playerName, requiredAmountOfPlayers, callback) => {
+  socket.on(
+    "createGame",
+    async (playerName, requiredAmountOfPlayers, callback) => {
       const players = [];
       players.push({ name: playerName, socketId: socket.id });
       console.log(
@@ -223,11 +219,11 @@ io.on("connection", (socket) => {
       }
 
       let firstCard = null;
-      for (let i=0; i<availableCards.length; i++) {
-        if(!availableCards[i].isSpecial) {
-            firstCard = availableCards[i];
-            availableCards.splice(i, 1);
-            break;
+      for (let i = 0; i < availableCards.length; i++) {
+        if (!availableCards[i].isSpecial) {
+          firstCard = availableCards[i];
+          availableCards.splice(i, 1);
+          break;
         }
       }
 
@@ -315,153 +311,166 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("playCard", async (matchID, selectedCardIndex, wildColor, callback) => {
-    // getting match data from datastore
-    const docRef = doc(db, "matches", matchID);
-    let match = await getDoc(docRef).then((snap) => snap.data());
+  socket.on(
+    "playCard",
+    async (matchID, selectedCardIndex, wildColor, callback) => {
+      // getting match data from datastore
+      const docRef = doc(db, "matches", matchID);
+      let match = await getDoc(docRef).then((snap) => snap.data());
 
-    const indexOfPlayer = getIndexOfPlayer(socket.id, match.players);
-    const player = match.players[indexOfPlayer];
-    const cardToPlay = player.cards[selectedCardIndex];
+      const indexOfPlayer = getIndexOfPlayer(socket.id, match.players);
+      const player = match.players[indexOfPlayer];
+      const cardToPlay = player.cards[selectedCardIndex];
 
-    // checking if the player is playing a turn
-    if (match.activePlayer != socket.id) {
-      const dataToSend = {
-        result: false,
-        reason: "It isn't your turn!"
-      };
-  
-      callback(dataToSend);
-      return;
-    }
-
-    // checking if the card can be played
-    if (!compareCards(match.playedCards[0], cardToPlay, match.wildColor)) {
-      const dataToSend = {
-        result: false,
-        reason: "Selected card doesn't match."
-      };
-  
-      callback(dataToSend);
-      return;
-    }
-
-    // reset wild color from previous turn (not always needed)
-    match.wildColor = null;
-
-    // handling special effects od cards
-    if(cardToPlay.isSpecial) {
-      if (cardToPlay.symbol == CONSTANTS.SYMBOL.REVERSE) {
-        match.order = match.order == CONSTANTS.ORDER.CLOCKWISE ? CONSTANTS.ORDER.COUNTERCLOCKWISE : CONSTANTS.ORDER.CLOCKWISE;
-      }
-      else if (cardToPlay.symbol == CONSTANTS.SYMBOL.SKIP) {
-        const indexOfActivePlayer = getIndexOfPlayer(match.activePlayer, match.players);
-        let indexOfNextActivePlayer = null;
-        if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
-            if(indexOfActivePlayer == match.players.length-1)
-              indexOfNextActivePlayer = 0;
-            else
-              indexOfNextActivePlayer = indexOfActivePlayer + 1;
-        }
-        else {
-          if(indexOfActivePlayer == 0)
-          indexOfNextActivePlayer = match.players.length - 1;
-        else
-          indexOfNextActivePlayer = indexOfActivePlayer - 1;
-        }
-        match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
-      }
-      else if (cardToPlay.symbol == CONSTANTS.SYMBOL.DRAW2) {
-        const indexOfActivePlayer = getIndexOfPlayer(match.activePlayer, match.players);
-        let indexOfNextActivePlayer = null;
-        if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
-            if(indexOfActivePlayer == match.players.length-1)
-              indexOfNextActivePlayer = 0;
-            else
-              indexOfNextActivePlayer = indexOfActivePlayer + 1;
-        }
-        else {
-          if(indexOfActivePlayer == 0)
-          indexOfNextActivePlayer = match.players.length - 1;
-        else
-          indexOfNextActivePlayer = indexOfActivePlayer - 1;
-        }
-        match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
-        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
-        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
-      }
-      else if (cardToPlay.symbol == CONSTANTS.SYMBOL.CHANGE_COLOR) {
-        match.wildColor = wildColor;
-      }
-      else if (cardToPlay.symbol == CONSTANTS.SYMBOL.DRAW4) {
-        const indexOfActivePlayer = getIndexOfPlayer(match.activePlayer, match.players);
-        let indexOfNextActivePlayer = null;
-        if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
-            if(indexOfActivePlayer == match.players.length-1)
-              indexOfNextActivePlayer = 0;
-            else
-              indexOfNextActivePlayer = indexOfActivePlayer + 1;
-        }
-        else {
-          if(indexOfActivePlayer == 0)
-          indexOfNextActivePlayer = match.players.length - 1;
-        else
-          indexOfNextActivePlayer = indexOfActivePlayer - 1;
-        }
-        match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
-        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
-        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
-        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
-        match.players[indexOfNextActivePlayer].cards.push(match.availableCards.shift());
-        match.wildColor = wildColor;
-      }
-    }
-
-    // handling of played card
-    match.playedCards.unshift(cardToPlay);
-    player.cards.splice(selectedCardIndex, 1);
-
-    // changing of active player
-    const indexOfActivePlayer = getIndexOfPlayer(match.activePlayer, match.players);
-    let indexOfNextActivePlayer = null;
-    if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
-        if(indexOfActivePlayer == match.players.length-1)
-          indexOfNextActivePlayer = 0;
-        else
-          indexOfNextActivePlayer = indexOfActivePlayer + 1;
-    }
-    else {
-      if(indexOfActivePlayer == 0)
-      indexOfNextActivePlayer = match.players.length - 1;
-    else
-      indexOfNextActivePlayer = indexOfActivePlayer - 1;
-    }
-    match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
-
-    
-    // updating of match in datastore
-    await updateDoc(docRef, match);
-
-
-    // prepared data sending to client [remember the security of private data]
-    const updatedGameData = {
-      activePlayer: match.activePlayer,
-      amountOfAvailableCards: match.availableCards.length,
-      players: match.players.map((player) => {
-        return {
-          id: player.socketId,
-          name: player.name,
-          amountOfCards: player.cards.length,
+      // checking if the player is playing a turn
+      if (match.activePlayer != socket.id) {
+        const dataToSend = {
+          result: false,
+          reason: "It isn't your turn!",
         };
-      }),
-      playedCards: match.playedCards,
-      wildColor: match.wildColor,
-      order: match.order
-    };
 
-    // emitting of event "updateGameData" to each player in match
-    match.players.forEach(player => {
-      const updatedGameDataToSend = Object.assign(updatedGameData, {
+        callback(dataToSend);
+        return;
+      }
+
+      // checking if the card can be played
+      if (!compareCards(match.playedCards[0], cardToPlay, match.wildColor)) {
+        const dataToSend = {
+          result: false,
+          reason: "Selected card doesn't match.",
+        };
+
+        callback(dataToSend);
+        return;
+      }
+
+      // reset wild color from previous turn (not always needed)
+      match.wildColor = null;
+
+      // handling special effects od cards
+      if (cardToPlay.isSpecial) {
+        if (cardToPlay.symbol == CONSTANTS.SYMBOL.REVERSE) {
+          match.order =
+            match.order == CONSTANTS.ORDER.CLOCKWISE
+              ? CONSTANTS.ORDER.COUNTERCLOCKWISE
+              : CONSTANTS.ORDER.CLOCKWISE;
+        } else if (cardToPlay.symbol == CONSTANTS.SYMBOL.SKIP) {
+          const indexOfActivePlayer = getIndexOfPlayer(
+            match.activePlayer,
+            match.players
+          );
+          let indexOfNextActivePlayer = null;
+          if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
+            if (indexOfActivePlayer == match.players.length - 1)
+              indexOfNextActivePlayer = 0;
+            else indexOfNextActivePlayer = indexOfActivePlayer + 1;
+          } else {
+            if (indexOfActivePlayer == 0)
+              indexOfNextActivePlayer = match.players.length - 1;
+            else indexOfNextActivePlayer = indexOfActivePlayer - 1;
+          }
+          match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+        } else if (cardToPlay.symbol == CONSTANTS.SYMBOL.DRAW2) {
+          const indexOfActivePlayer = getIndexOfPlayer(
+            match.activePlayer,
+            match.players
+          );
+          let indexOfNextActivePlayer = null;
+          if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
+            if (indexOfActivePlayer == match.players.length - 1)
+              indexOfNextActivePlayer = 0;
+            else indexOfNextActivePlayer = indexOfActivePlayer + 1;
+          } else {
+            if (indexOfActivePlayer == 0)
+              indexOfNextActivePlayer = match.players.length - 1;
+            else indexOfNextActivePlayer = indexOfActivePlayer - 1;
+          }
+          match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+          match.players[indexOfNextActivePlayer].cards.push(
+            match.availableCards.shift()
+          );
+          match.players[indexOfNextActivePlayer].cards.push(
+            match.availableCards.shift()
+          );
+        } else if (cardToPlay.symbol == CONSTANTS.SYMBOL.CHANGE_COLOR) {
+          match.wildColor = wildColor;
+        } else if (cardToPlay.symbol == CONSTANTS.SYMBOL.DRAW4) {
+          const indexOfActivePlayer = getIndexOfPlayer(
+            match.activePlayer,
+            match.players
+          );
+          let indexOfNextActivePlayer = null;
+          if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
+            if (indexOfActivePlayer == match.players.length - 1)
+              indexOfNextActivePlayer = 0;
+            else indexOfNextActivePlayer = indexOfActivePlayer + 1;
+          } else {
+            if (indexOfActivePlayer == 0)
+              indexOfNextActivePlayer = match.players.length - 1;
+            else indexOfNextActivePlayer = indexOfActivePlayer - 1;
+          }
+          match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+          match.players[indexOfNextActivePlayer].cards.push(
+            match.availableCards.shift()
+          );
+          match.players[indexOfNextActivePlayer].cards.push(
+            match.availableCards.shift()
+          );
+          match.players[indexOfNextActivePlayer].cards.push(
+            match.availableCards.shift()
+          );
+          match.players[indexOfNextActivePlayer].cards.push(
+            match.availableCards.shift()
+          );
+          match.wildColor = wildColor;
+        }
+      }
+
+      // handling of played card
+      match.playedCards.unshift(cardToPlay);
+      player.cards.splice(selectedCardIndex, 1);
+
+      // changing of active player
+      const indexOfActivePlayer = getIndexOfPlayer(
+        match.activePlayer,
+        match.players
+      );
+      let indexOfNextActivePlayer = null;
+      if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
+        if (indexOfActivePlayer == match.players.length - 1)
+          indexOfNextActivePlayer = 0;
+        else indexOfNextActivePlayer = indexOfActivePlayer + 1;
+      } else {
+        if (indexOfActivePlayer == 0)
+          indexOfNextActivePlayer = match.players.length - 1;
+        else indexOfNextActivePlayer = indexOfActivePlayer - 1;
+      }
+      match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+
+      //check winner
+
+      // updating of match in datastore
+      await updateDoc(docRef, match);
+
+      // prepared data sending to client [remember the security of private data]
+      const updatedGameData = {
+        activePlayer: match.activePlayer,
+        amountOfAvailableCards: match.availableCards.length,
+        players: match.players.map((player) => {
+          return {
+            id: player.socketId,
+            name: player.name,
+            amountOfCards: player.cards.length,
+          };
+        }),
+        playedCards: match.playedCards,
+        wildColor: match.wildColor,
+        order: match.order,
+      };
+
+      // emitting of event "updateGameData" to each player in match
+      match.players.forEach((player) => {
+        const updatedGameDataToSend = Object.assign(updatedGameData, {
           player: {
             id: player.socketId,
             cards: player.cards,
@@ -469,25 +478,27 @@ io.on("connection", (socket) => {
           },
         });
 
-        console.log(`${player.name}'s updated gameData to send:`, updatedGameDataToSend);
+        console.log(
+          `${player.name}'s updated gameData to send:`,
+          updatedGameDataToSend
+        );
 
         try {
           io.to(player.socketId).emit("updateGameData", updatedGameDataToSend);
         } catch (error) {
           console.log("Error while emitting startGame event:", error);
         }
-    });
-    
+      });
 
-    // preparing result data as success and calling the callback
-    const dataToSend = {
-      result: true,
-      reason: ""
-    };
+      // preparing result data as success and calling the callback
+      const dataToSend = {
+        result: true,
+        reason: "",
+      };
 
-    callback(dataToSend);
-  });
-
+      callback(dataToSend);
+    }
+  );
 
   socket.on("drawCard", async (matchID, callback) => {
     // getting match data from datastore
@@ -501,9 +512,9 @@ io.on("connection", (socket) => {
     if (match.activePlayer != socket.id) {
       const dataToSend = {
         result: false,
-        reason: "It isn't your turn!"
+        reason: "It isn't your turn!",
       };
-  
+
       callback(dataToSend);
       return;
     }
@@ -512,26 +523,24 @@ io.on("connection", (socket) => {
     player.cards.push(match.availableCards.shift());
 
     // changing of active player
-    const indexOfActivePlayer = getIndexOfPlayer(match.activePlayer, match.players);
+    const indexOfActivePlayer = getIndexOfPlayer(
+      match.activePlayer,
+      match.players
+    );
     let indexOfNextActivePlayer = null;
     if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
-        if(indexOfActivePlayer == match.players.length-1)
-          indexOfNextActivePlayer = 0;
-        else
-          indexOfNextActivePlayer = indexOfActivePlayer + 1;
-    }
-    else {
-      if(indexOfActivePlayer == 0)
-      indexOfNextActivePlayer = match.players.length - 1;
-    else
-      indexOfNextActivePlayer = indexOfActivePlayer - 1;
+      if (indexOfActivePlayer == match.players.length - 1)
+        indexOfNextActivePlayer = 0;
+      else indexOfNextActivePlayer = indexOfActivePlayer + 1;
+    } else {
+      if (indexOfActivePlayer == 0)
+        indexOfNextActivePlayer = match.players.length - 1;
+      else indexOfNextActivePlayer = indexOfActivePlayer - 1;
     }
     match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
 
-    
     // updating of match in datastore
     await updateDoc(docRef, match);
-
 
     // prepared data sending to client [remember the security of private data]
     const updatedGameData = {
@@ -546,34 +555,35 @@ io.on("connection", (socket) => {
       }),
       playedCards: match.playedCards,
       wildColor: match.wildColor,
-      order: match.order
+      order: match.order,
     };
 
     // emitting of event "updateGameData" to each player in match
-    match.players.forEach(player => {
+    match.players.forEach((player) => {
       const updatedGameDataToSend = Object.assign(updatedGameData, {
-          player: {
-            id: player.socketId,
-            cards: player.cards,
-            amountOfCards: player.cards.length,
-          },
-        });
+        player: {
+          id: player.socketId,
+          cards: player.cards,
+          amountOfCards: player.cards.length,
+        },
+      });
 
-        console.log(`${player.name}'s updated gameData to send:`, updatedGameDataToSend);
+      console.log(
+        `${player.name}'s updated gameData to send:`,
+        updatedGameDataToSend
+      );
 
-        try {
-          io.to(player.socketId).emit("updateGameData", updatedGameDataToSend);
-        } catch (error) {
-          console.log("Error while emitting startGame event:", error);
-        }
+      try {
+        io.to(player.socketId).emit("updateGameData", updatedGameDataToSend);
+      } catch (error) {
+        console.log("Error while emitting startGame event:", error);
+      }
     });
-
-
 
     // preparing result data as success and calling the callback
     const dataToSend = {
       result: true,
-      reason: ""
+      reason: "",
     };
 
     callback(dataToSend);
@@ -587,8 +597,6 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-
 
 // ----- TODO ----- //
 // dodać odświeżanie talii kart po wyczerpani się stosu dobierania zarówno w playCard jak i w drawCard
