@@ -179,7 +179,7 @@ io.on("connection", (socket) => {
       );
 
       updatedPlayersList.forEach((player) => {
-        Object.assign(player, { cards: [] });
+        Object.assign(player, { cards: [], afk: false });
       });
 
       for (let i = 0; i < 2; i++) {
@@ -425,6 +425,7 @@ io.on("connection", (socket) => {
       //check winner
       if (player.cards.length === 0) {
         match.winner = player.socketId;
+        match.state = CONSTANTS.GAME_STATES.FINISHED;
       }
 
       // updating of match in datastore
@@ -584,13 +585,49 @@ io.on("connection", (socket) => {
     callback(dataToSend);
   });
 
-  socket.on("disconnect", async () => {
+  socket.on("disconnect", async (matchID) => {
     console.log(`Client disconneted: ${socket.id}`);
 
-    // const docRef = doc(db, "matches", matchID);
-    // let match = await getDoc(docRef).then((snap) => snap.data());
+    const docRef = doc(db, "matches", matchID);
+    let match = await getDoc(docRef).then((snap) => snap.data());
 
-    // match;
+    console.log(match);
+    if (match.state === CONSTANTS.GAME_STATES.WAITING_FOR_PLAYERS) {
+      const updatedPlayersList = match.players.filter(
+        (player) => player.socketId != socket.id
+      );
+      console.log("quitMatch (updated list of players):", updatedPlayersList);
+
+      if (updatedPlayersList.length) {
+        await updateDoc(docRef, {
+          players: updatedPlayersList,
+        });
+
+        updateAvailableMatches();
+
+        // prepared data sending to client [remember the security of private data]
+        const dataToSend = {
+          id: `docRef`.id,
+          players: updatedPlayersList.map((player) => {
+            return { name: player.name };
+          }),
+          requiredAmountOfPlayers: match.requiredAmountOfPlayers,
+        };
+
+        updatedPlayersList.forEach((player) => {
+          io.to(player.socketId).emit("updateWaitingForGameData", dataToSend);
+        });
+      } else {
+        await deleteDoc(docRef);
+        updateAvailableMatches();
+      }
+    } else if (match.state === CONSTANTS.GAME_STATES.ACTIVE) {
+      match.players.forEach((el) => {
+        if (el.socketId === socket.id) {
+          el.afk = true;
+        }
+      });
+    }
   });
 });
 
