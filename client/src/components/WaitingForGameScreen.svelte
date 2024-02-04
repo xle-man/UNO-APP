@@ -23,6 +23,7 @@
                 value.player = data.player;
                 return value;
             });
+            
             switchScreen(CONSTANTS.SCREEN.GAME_SCREEN);
         });
     });

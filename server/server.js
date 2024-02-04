@@ -182,7 +182,7 @@ io.on("connection", (socket) => {
         Object.assign(player, { cards: [] });
       });
 
-      for (let i = 0; i < 1; i++) {
+      for (let i = 0; i < 2; i++) {
         updatedPlayersList.forEach((player) => {
           player.cards.push(availableCards.shift());
         });
@@ -228,7 +228,7 @@ io.on("connection", (socket) => {
           },
         });
 
-        console.log(`${player.name}'s data to send:`, initDataToSend);
+        // console.log(`${player.name}'s data to send:`, initDataToSend);
 
         try {
           io.to(player.socketId).emit("startGame", initDataToSend);
@@ -584,8 +584,13 @@ io.on("connection", (socket) => {
     callback(dataToSend);
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log(`Client disconneted: ${socket.id}`);
+
+    // const docRef = doc(db, "matches", matchID);
+    // let match = await getDoc(docRef).then((snap) => snap.data());
+
+    // match;
   });
 });
 
