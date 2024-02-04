@@ -1,4 +1,5 @@
 <script>
+  import { onDestroy, onMount } from "svelte";
   import { Router, Route } from "svelte-routing";
   import { io } from "socket.io-client";
   import { isSocketConnected, screen, socketIO } from "./javascripts/AppStore";
@@ -27,6 +28,10 @@
   socket.on("disconnect", () => {
     console.log("DISCONNECT");
     isSocketConnected.set(false);
+  });
+
+  onDestroy(() => {
+    
   });
 
 </script>
