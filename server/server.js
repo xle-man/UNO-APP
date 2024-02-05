@@ -484,7 +484,7 @@ io.on("connection", (socket) => {
     let matchID = "";
     let match = null;
 
-    //update player afk to true
+    //update player afk to true && get matchID
     await getDocs(matchesRef).then((snap) => {
       snap.docs.map((doc) => {
         const data = doc.data();
@@ -495,7 +495,7 @@ io.on("connection", (socket) => {
               matchID = doc.id;
               match = data;
 
-              console.log(matchID, player);
+              console.log(matchID);
               return;
             }
           }
@@ -505,6 +505,15 @@ io.on("connection", (socket) => {
 
     //update of match in firestore
     if (matchID && match) {
+      changeActivePlayer(match);
+      const activePlayers = match.players.filter((el) => !el.afk);
+
+      if (activePlayers.length < 2) {
+        console.log("activePlayers", activePlayers);
+        match.state = CONSTANTS.GAME_STATES.FINISHED;
+        match.winner = activePlayers[0].socketId;
+      }
+
       const docRef = doc(db, "matches", matchID);
       updateDoc(docRef, match);
 
@@ -523,6 +532,7 @@ io.on("connection", (socket) => {
         wildColor: match.wildColor,
         order: match.order,
         winner: match.winner,
+        state: match.state,
       };
 
       // emitting of event "updateGameData" to each player in match
@@ -533,13 +543,9 @@ io.on("connection", (socket) => {
               id: player.socketId,
               cards: player.cards,
               amountOfCards: player.cards.length,
+              afk: player.afk,
             },
           });
-
-          // console.log(
-          //   `${player.name}'s updated gameData to send:`,
-          //   updatedGameDataToSend
-          // );
 
           try {
             io.to(player.socketId).emit(
