@@ -48,6 +48,24 @@ function changeActivePlayer(match) {
     else indexOfNextActivePlayer = indexOfActivePlayer - 1;
   }
   match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+  return indexOfNextActivePlayer;
+}
+
+function getCardsToNextPlayer(match, indexOfNextActivePlayer, amount) {
+  for (let i = 0; i < amount; i++) {
+    if (match.availableCards.length === 0) {
+      const lastCard = match.playedCards.shift();
+      match.availableCards = shuffleArray(match.playedCards);
+      match.playedCards = [lastCard];
+    }
+    match.players[indexOfNextActivePlayer].cards.push(
+      match.availableCards.shift()
+    );
+  }
+}
+
+function callbackToClient(result, reason, data, callback) {
+  callback({ result, reason, data });
 }
 
 module.exports = {
@@ -55,4 +73,6 @@ module.exports = {
   compareCards,
   getIndexOfPlayer,
   changeActivePlayer,
+  getCardsToNextPlayer,
+  callbackToClient,
 };
