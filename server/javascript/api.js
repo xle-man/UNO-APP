@@ -32,4 +32,27 @@ function getIndexOfPlayer(socketId, players) {
   return -1;
 }
 
-module.exports = { shuffleArray, compareCards, getIndexOfPlayer };
+function changeActivePlayer(match) {
+  const indexOfActivePlayer = getIndexOfPlayer(
+    match.activePlayer,
+    match.players
+  );
+  let indexOfNextActivePlayer = null;
+  if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
+    if (indexOfActivePlayer == match.players.length - 1)
+      indexOfNextActivePlayer = 0;
+    else indexOfNextActivePlayer = indexOfActivePlayer + 1;
+  } else {
+    if (indexOfActivePlayer == 0)
+      indexOfNextActivePlayer = match.players.length - 1;
+    else indexOfNextActivePlayer = indexOfActivePlayer - 1;
+  }
+  match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+}
+
+module.exports = {
+  shuffleArray,
+  compareCards,
+  getIndexOfPlayer,
+  changeActivePlayer,
+};

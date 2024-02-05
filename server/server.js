@@ -9,7 +9,9 @@ const {
   shuffleArray,
   compareCards,
   getIndexOfPlayer,
+  changeActivePlayer,
 } = require("./javascript/api");
+
 const {
   collection,
   getDocs,
@@ -37,8 +39,9 @@ app.get("/", (req, res) => {
 
 // ----- Socket ----- //
 io.on("connection", (socket) => {
-  const matchesRef = collection(db, "matches");
   console.log(`New client joined: ${socket.id}`);
+
+  const matchesRef = collection(db, "matches");
 
   // function to refresh list for every client in ListOfMatchesScreen
   const updateAvailableMatches = async () => {
@@ -182,7 +185,7 @@ io.on("connection", (socket) => {
         Object.assign(player, { cards: [], afk: false });
       });
 
-      for (let i = 0; i < 1; i++) {
+      for (let i = 0; i < 7; i++) {
         updatedPlayersList.forEach((player) => {
           player.cards.push(availableCards.shift());
         });
@@ -356,6 +359,7 @@ io.on("connection", (socket) => {
             match.activePlayer,
             match.players
           );
+
           let indexOfNextActivePlayer = null;
           if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
             if (indexOfActivePlayer == match.players.length - 1)
@@ -466,11 +470,13 @@ io.on("connection", (socket) => {
             id: player.socketId,
             name: player.name,
             amountOfCards: player.cards.length,
+            afk: player.afk,
           };
         }),
         playedCards: match.playedCards,
         wildColor: match.wildColor,
         order: match.order,
+        winner: match.winner,
       };
 
       // emitting of event "updateGameData" to each player in match
@@ -613,6 +619,79 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", async () => {
     console.log(`Client disconneted: ${socket.id}`);
+
+    const matchesRef = collection(db, "matches");
+    let matchID = "";
+    let match = null;
+
+    //update player afk to true
+    await getDocs(matchesRef).then((snap) => {
+      snap.docs.map((doc) => {
+        const data = doc.data();
+        data.players.map((player) => {
+          if (data.state === CONSTANTS.GAME_STATES.ACTIVE) {
+            if (player.socketId === socket.id) {
+              player.afk = true;
+              matchID = doc.id;
+              match = data;
+
+              console.log(matchID, player);
+              return;
+            }
+          }
+        });
+      });
+    });
+
+    //update of match in firestore
+    if (matchID && match) {
+      const docRef = doc(db, "matches", matchID);
+      updateDoc(docRef, match);
+
+      const updatedGameData = {
+        activePlayer: match.activePlayer,
+        amountOfAvailableCards: match.availableCards.length,
+        players: match.players.map((player) => {
+          return {
+            id: player.socketId,
+            name: player.name,
+            amountOfCards: player.cards.length,
+            afk: player.afk,
+          };
+        }),
+        playedCards: match.playedCards,
+        wildColor: match.wildColor,
+        order: match.order,
+        winner: match.winner,
+      };
+
+      // emitting of event "updateGameData" to each player in match
+      match.players.forEach((player) => {
+        if (player.socketId !== socket.id) {
+          const updatedGameDataToSend = Object.assign(updatedGameData, {
+            player: {
+              id: player.socketId,
+              cards: player.cards,
+              amountOfCards: player.cards.length,
+            },
+          });
+
+          // console.log(
+          //   `${player.name}'s updated gameData to send:`,
+          //   updatedGameDataToSend
+          // );
+
+          try {
+            io.to(player.socketId).emit(
+              "updateGameData",
+              updatedGameDataToSend
+            );
+          } catch (error) {
+            console.log("Error while emitting startGame event:", error);
+          }
+        }
+      });
+    }
   });
 });
 
