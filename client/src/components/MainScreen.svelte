@@ -1,4 +1,5 @@
 <script>   
+    import { fade } from "svelte/transition";
     import { get, writable } from "svelte/store";
     import { playerName, switchScreen, alertData, createGame } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
@@ -58,39 +59,50 @@
 
 </script>
 
-
-<div>
+<div class="screen-container" in:fade={{duration: 500}}>
     <div>
-        <button on:click={onCreateGame}>CREATE</button>
         <div>
-            amount of players:
-            {#each $amountOfPlayersButtons as button}
-                <button class={`amountOfPlayersButton ${button.isSelected ? "amountOfPlayersButton-selected" : ""}`} on:click={() => {changeAmountOfPlayersButton(button.value)}}>
-                    {button.value}
-                </button>
-            {/each}
-        </div>
-    </div>
-    <div>
-        <button on:click={onJoinToGame}>JOIN</button>
-    </div>
-</div>
-
-{#if showDialog}
-    <div class="dialog-container"> <!--z-index[10]-->
-        <div class="dialog-box">
-            <div class="dialog-title">BEFORE YOU BEGIN</div>
-            <div class="input-item">
-                <input type="text" name="playerName" required bind:value={playerNameInputValue}>
-                <label for="playerName">Your name</label>
+            <button on:click={onCreateGame}>CREATE</button>
+            <div>
+                amount of players:
+                {#each $amountOfPlayersButtons as button}
+                    <button class={`amountOfPlayersButton ${button.isSelected ? "amountOfPlayersButton-selected" : ""}`} on:click={() => {changeAmountOfPlayersButton(button.value)}}>
+                        {button.value}
+                    </button>
+                {/each}
             </div>
-            <button on:click={setName}>SET</button>
+        </div>
+        <div>
+            <button on:click={onJoinToGame}>JOIN</button>
         </div>
     </div>
-{/if}
+    
+    <!-- fixed element -->
+    {#if showDialog}
+        <div class="dialog-container"> <!--z-index[10]-->
+            <div class="dialog-box">
+                <div class="dialog-title">BEFORE YOU BEGIN</div>
+                <div class="input-item">
+                    <input type="text" name="playerName" required bind:value={playerNameInputValue}>
+                    <label for="playerName">Your name</label>
+                </div>
+                <button on:click={setName}>SET</button>
+            </div>
+        </div>
+    {/if}
+</div>
 
 
 <style>
+    /* --- screen container --- */
+    .screen-container {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     /* --- dialog --- */
     .dialog-container {
         position: fixed;

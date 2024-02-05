@@ -1,7 +1,8 @@
 <script>
+    import { fade } from "svelte/transition";
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { getAvailableMatches, listOfMatchesScreenData, socketIO, joinToGame, switchScreen } from "../javascripts/AppStore";
+    import { getAvailableMatches, listOfMatchesScreenData, socketIO, joinToGame, switchScreen, resetListOfMatchesScreenData } from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
     onMount(() => {
@@ -17,6 +18,7 @@
 
     onDestroy(() => {
         get(socketIO).off("updateAvailableMatches");
+        resetListOfMatchesScreenData();
     });
 
 
@@ -26,28 +28,39 @@
 
 </script>
 
-
-<button on:click={() => {switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN)}}>HOME</button>
-
-<div class="listOfMatches-container">
-    {#each $listOfMatchesScreenData.matches as match}
-        <div class="listOfMatches-item">
-            <div class="listOfMatches-item-title">{match.id}</div>
-            <div class="amoutOfPlayers-info">
-                {match.players.length}/{match.requiredAmountOfPlayers}
+<div class="screen-container" in:fade={{duration: 500}}>
+    <button on:click={() => {switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN)}}>HOME</button>
+    
+    <div class="listOfMatches-container">
+        {#each $listOfMatchesScreenData.matches as match}
+            <div class="listOfMatches-item">
+                <div class="listOfMatches-item-title">{match.id}</div>
+                <div class="amoutOfPlayers-info">
+                    {match.players.length}/{match.requiredAmountOfPlayers}
+                </div>
+                <div>
+                    {#each match.players as player}
+                        <div>{player.name}</div>
+                    {/each}
+                </div>
+                <button on:click={() => {onJoinToMatch(match.id)}}>JOIN</button>
             </div>
-            <div>
-                {#each match.players as player}
-                    <div>{player.name}</div>
-                {/each}
-            </div>
-            <button on:click={() => {onJoinToMatch(match.id)}}>JOIN</button>
-        </div>
-    {/each}
+        {/each}
+    </div>
 </div>
 
 
+
 <style>
+    /* --- screen container --- */
+     .screen-container {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     .listOfMatches-container {
         display: flex;
         flex-direction: column;

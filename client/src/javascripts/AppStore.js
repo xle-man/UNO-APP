@@ -152,6 +152,7 @@ export const gameScreenData = writable({
 // });
 // ------------------------------------------------- //
 
+
 export function resetWaitingForPlayersScreenData() {
     waitingForPlayersScreenData.set({
         matchID: "",
@@ -159,6 +160,7 @@ export function resetWaitingForPlayersScreenData() {
         requiredAmountOfPlayers: 0
     });
 }
+
 
 export function resetGameScreenData() {
     gameScreenData.set({
@@ -213,6 +215,13 @@ export function resetGameScreenData() {
             ],
              
         }
+    });
+}
+
+
+export function resetListOfMatchesScreenData() {
+    listOfMatchesScreenData.set({
+        matches: [],
     });
 }
 
@@ -390,4 +399,15 @@ export function changeWildColorOption(option) {
         value.wildColor.hex = option.hex;
         return value;
     })
+}
+
+
+export function getPlayerName(socketId) {
+    console.log(get(gameScreenData).match.players);
+    const list = get(gameScreenData).match.players.filter(player => player.id === socketId);
+    console.log("list", list);
+    if(list.length)
+        return list[0];
+    else
+        return null;
 }

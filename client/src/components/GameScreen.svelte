@@ -2,7 +2,7 @@
     import { onDestroy, onMount } from "svelte";
     import { fade, fly } from 'svelte/transition';
     import { get } from "svelte/store";
-    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData, playerName, selectCard, setGameAlert, alertData, setAlert, playCard, changeWildColorOption, drawCard} from "../javascripts/AppStore";
+    import { socketIO, waitingForPlayersScreenData, quitMatch, switchScreen, gameScreenData, playerName, selectCard, setGameAlert, alertData, setAlert, playCard, changeWildColorOption, drawCard, resetGameScreenData, getPlayerName} from "../javascripts/AppStore";
     import CONSTANTS from "../javascripts/Constants";
 
     import GameAlert from "./GameAlert.svelte";
@@ -19,6 +19,7 @@
                 value.match.playedCards = data.playedCards;
                 value.match.wildColor = data.wildColor;
                 value.match.order = data.order;
+                value.match.winner = data.winner;
                 value.player = data.player;
                 return value;
             });
@@ -40,6 +41,11 @@
         changeWildColorOption(option);
     }
 
+    function onHomeButtonClicked() {
+        switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
+        resetGameScreenData();
+    }
+
 
     onDestroy(() => {
         get(socketIO).off("updateGameData");
@@ -57,89 +63,104 @@
 
 </script>
 
-<div class="other-players-info-container"> <!--z-index[10]-->
-    {#each $gameScreenData.match.players as player}
-         <div class="other-players-info-box">
-            <div class="other-player-info-avatar">
-                <IconUser color="black" strokeWidth={2} />
-            </div>
-            <div class="other-player-info-amountOfCards">
-                {player.amountOfCards}
-            </div>
-            <div style={player.id == $gameScreenData.player.id ? "color: red;" : ""}>
-                {player.name}
-            </div>
-            {#if player.id == $gameScreenData.match.activePlayer}
-                 <div>
-                    [active]
-                 </div>
-            {/if}
-         </div>
-    {/each}
-</div>
-
-<div class="player-cards"> <!--z-index[20]-->
-    {#each $gameScreenData.player.cards as card, index}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div 
-            class={`card ${$gameScreenData.selectedCardIndex == index ? "selected-card" : ""}`} 
-            style={`--card-transform: translate(-50%, -50%) rotate(${ $gameScreenData.player.cards.length>8 ? Math.round(( 120 / $gameScreenData.player.cards.length) * (index+1) - 60 - (60 / $gameScreenData.player.cards.length)) : Math.round(( 90 / $gameScreenData.player.cards.length) * (index+1) - 45 - (45 / $gameScreenData.player.cards.length)) }deg);`}
-            on:click={() => {selectCard(index)}} 
-        >
-            <img 
-                src={`./assets/images/cards/${card.src}.png`} 
-                alt={`${card.src}_CARD`} 
-                class="card-img" 
-                style={$gameScreenData.selectedCardIndex != null ? $gameScreenData.selectedCardIndex == index ? "filter: none;" : "filter: grayscale(0);" : ""}
-            >
-        </div>
-    {/each}
-</div>
-
-<div class="action-menu"> <!--z-index[30]-->
-    {#if $gameScreenData.wildColor.isVisible}
-        <div class="wild-color-container" transition:fade={{ duration: 200 }}>
-            <div class="wild-color-list">
-                {#each $gameScreenData.wildColor.options as option}
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <!-- svelte-ignore a11y-no-static-element-interactions -->
-                    <div class="wild-color-option" on:click={() => onChangeWildColor(option)}>
-                        {option.color}
-                    </div>
-                {/each}
-            </div>
-            {#if $gameScreenData.wildColor.color != null}
-                <div class="wild-color-background" style={`transform: translateY(${$gameScreenData.wildColor.topOffset}px); background-color: ${$gameScreenData.wildColor.hex}`}></div>
-            {/if}
-        </div>
-    {/if}
-    <div class="button-container">
-        <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id} on:click={onDrawAction}>
-            DRAW
-        </button>
-        <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id} on:click={onConfirmAction}>
-            CONFIRM
-        </button>
-    </div>
-</div>
 
 
-<GameAlert/> <!--z-index[40]-->
-
-
-<div class="game-container">
+<div class="game-container" in:fade={{ duration: 500}}>
     <div>Amount of available cards: {$gameScreenData.match.amountOfAvailableCards}</div>
+
     <div class="last-played-card-container">
         <img 
-            src={`./assets/images/cards/${$gameScreenData.match.playedCards[0].src}.png`} 
-            alt={`${$gameScreenData.match.playedCards[0].src}_CARD`}
-            class="last-played-card-img" 
+        src={`./assets/images/cards/${$gameScreenData.match.playedCards[0].src}.png`} 
+        alt={`${$gameScreenData.match.playedCards[0].src}_CARD`}
+        class="last-played-card-img" 
         >
     </div>
+
     {#if $gameScreenData.match.wildColor}
-         <div>wild color: {$gameScreenData.match.wildColor}</div>
+    <div>wild color: {$gameScreenData.match.wildColor}</div>
     {/if}
+
+    <!-- fixed element -->
+    <div class="other-players-info-container"> <!--z-index[10]-->
+        {#each $gameScreenData.match.players as player}
+             <div class="other-players-info-box">
+                <div class="other-player-info-avatar">
+                    <IconUser color="black" strokeWidth={2} />
+                </div>
+                <div class="other-player-info-amountOfCards">
+                    {player.amountOfCards}
+                </div>
+                <div style={player.id == $gameScreenData.player.id ? "color: red;" : ""}>
+                    {player.name}
+                </div>
+                {#if player.id == $gameScreenData.match.activePlayer}
+                     <div>
+                        [active]
+                     </div>
+                {/if}
+             </div>
+        {/each}
+    </div>
+    
+    <!-- fixed element -->
+    <div class="player-cards"> <!--z-index[20]-->
+        {#each $gameScreenData.player.cards as card, index}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div 
+                class={`card ${$gameScreenData.selectedCardIndex == index ? "selected-card" : ""}`} 
+                style={`--card-transform: translate(-50%, -50%) rotate(${ $gameScreenData.player.cards.length>8 ? Math.round(( 120 / $gameScreenData.player.cards.length) * (index+1) - 60 - (60 / $gameScreenData.player.cards.length)) : Math.round(( 90 / $gameScreenData.player.cards.length) * (index+1) - 45 - (45 / $gameScreenData.player.cards.length)) }deg);`}
+                on:click={() => {selectCard(index)}} 
+            >
+                <img 
+                    src={`./assets/images/cards/${card.src}.png`} 
+                    alt={`${card.src}_CARD`} 
+                    class="card-img" 
+                    style={$gameScreenData.selectedCardIndex != null ? $gameScreenData.selectedCardIndex == index ? "filter: none;" : "filter: grayscale(0);" : ""}
+                >
+            </div>
+        {/each}
+    </div>
+    
+    <!-- fixed element -->
+    <div class="action-menu"> <!--z-index[30]-->
+        {#if $gameScreenData.wildColor.isVisible}
+            <div class="wild-color-container" transition:fade={{ duration: 200 }}>
+                <div class="wild-color-list">
+                    {#each $gameScreenData.wildColor.options as option}
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
+                        <!-- svelte-ignore a11y-no-static-element-interactions -->
+                        <div class="wild-color-option" on:click={() => onChangeWildColor(option)}>
+                            {option.color}
+                        </div>
+                    {/each}
+                </div>
+                {#if $gameScreenData.wildColor.color != null}
+                    <div class="wild-color-background" style={`transform: translateY(${$gameScreenData.wildColor.topOffset}px); background-color: ${$gameScreenData.wildColor.hex}`}></div>
+                {/if}
+            </div>
+        {/if}
+        <div class="button-container">
+            <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id} on:click={onDrawAction}>
+                DRAW
+            </button>
+            <button disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id} on:click={onConfirmAction}>
+                CONFIRM
+            </button>
+        </div>
+    </div>
+    
+    <!-- fixed element -->
+    {#if $gameScreenData.match.winner}
+        <div class="game-over-container" in:fade={{ duration: 1000}} out:fade={{duration: 500}}> <!--z-index[40]-->
+            <div class="game-over-title">GAME OVER</div>
+            <div class="winner-text">Player <span style="font-weight: bold;">{getPlayerName($gameScreenData.match.winner).name}</span> won the game</div>
+            <button on:click={onHomeButtonClicked}>HOME</button>
+        </div>
+    {/if}
+    
+    <!-- fixed element -->
+    <GameAlert/> <!--z-index[100]-->
 </div>
 
 
@@ -252,6 +273,32 @@
         height: 25px;
         background-color: lightcoral;
         transition: 0.5s ease-in-out;
+    }
+
+
+    /* --- winner container --- */
+    .game-over-container {
+        position: fixed;
+        z-index: 40;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+    }
+
+    .winner-text {
+
+    }
+
+    .game-over-options-container {
+
     }
 
 
