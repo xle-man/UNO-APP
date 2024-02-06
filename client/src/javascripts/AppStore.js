@@ -21,6 +21,7 @@ export const waitingForPlayersScreenData = writable({
 });
 
 export const listOfMatchesScreenData = writable({
+    isFetching: false,
     matches: [],
 });
 
@@ -221,7 +222,15 @@ export function resetGameScreenData() {
 
 export function resetListOfMatchesScreenData() {
     listOfMatchesScreenData.set({
+        isFetching: false,
         matches: [],
+    });
+}
+
+function setIsFetchingMatchesFlag(flag) {
+    listOfMatchesScreenData.update(value => {
+        value.isFetching = flag;
+        return value;
     });
 }
 
@@ -232,9 +241,11 @@ export function switchScreen(value) {
 
 
 export function getAvailableMatches() {
+    setIsFetchingMatchesFlag(true);
     get(socketIO).emit("getAvailableMatches", (list) => {
         listOfMatchesScreenData.update((data) => {
             data.matches = list;
+            setIsFetchingMatchesFlag(false);
             return data;
         });
     });

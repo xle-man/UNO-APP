@@ -22,13 +22,20 @@
     getAvailableMatches();
   });
 
+
   onDestroy(() => {
     get(socketIO).off("updateAvailableMatches");
     resetListOfMatchesScreenData();
   });
 
+
   function onJoinToMatch(id) {
     joinToGame(id);
+  }
+
+
+  function onRefresh() {
+    getAvailableMatches();
   }
 </script>
 
@@ -44,25 +51,36 @@
         switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
       }}>HOME</button
     >
+    <button
+      class="button"
+      on:click={onRefresh}>REFRESH</button
+    >
+    
 
     <div class="listOfMatches-container">
-      {#each $listOfMatchesScreenData.matches as match}
-        <div class="item">
-          <div class="listOfMatches-item-title">ID: {match.id}</div>
-          <div class="amountOfPlayers-info">
-            Players: {match.players.length}/{match.requiredAmountOfPlayers}
-            {#each match.players as player, i}
-              <div class="player">{i + 1}. {player.name}</div>
-            {/each}
-          </div>
-          <button
-            class="button"
-            on:click={() => {
-              onJoinToMatch(match.id);
-            }}>JOIN</button
-          >
-        </div>
-      {/each}
+      {#if $listOfMatchesScreenData.matches.length > 0 && !$listOfMatchesScreenData.isFetching}
+         {#each $listOfMatchesScreenData.matches as match}
+           <div class="item">
+             <div class="listOfMatches-item-title">ID: {match.id}</div>
+             <div class="amountOfPlayers-info">
+               Players: {match.players.length}/{match.requiredAmountOfPlayers}
+               {#each match.players as player, i}
+                 <div class="player">{i + 1}. {player.name}</div>
+               {/each}
+             </div>
+             <button
+               class="button"
+               on:click={() => {
+                 onJoinToMatch(match.id);
+               }}>JOIN</button
+             >
+           </div>
+         {/each}
+      {:else if $listOfMatchesScreenData.matches.length === 0 && !$listOfMatchesScreenData.isFetching}
+          brak matchów
+      {:else}
+          ładowanie
+      {/if}
     </div>
   </div>
 </div>
