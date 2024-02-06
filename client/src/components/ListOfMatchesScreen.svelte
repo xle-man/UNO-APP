@@ -32,32 +32,38 @@
   }
 </script>
 
-<div class="screen-container" in:fade={{ duration: 500 }}>
-  <button
-    on:click={() => {
-      switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
-    }}>HOME</button
-  >
+<div class="screen-container bordered-bottom" in:fade={{ duration: 500 }}>
+  <div class="box">
+    <div>
+      <div class="heading">JOIN</div>
+      <div class="subheading">List of matches</div>
+    </div>
+    <button
+      class="button"
+      on:click={() => {
+        switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
+      }}>HOME</button
+    >
 
-  <div class="listOfMatches-container">
-    {#each $listOfMatchesScreenData.matches as match}
-      <div class="listOfMatches-item">
-        <div class="listOfMatches-item-title">{match.id}</div>
-        <div class="amoutOfPlayers-info">
-          {match.players.length}/{match.requiredAmountOfPlayers}
+    <div class="listOfMatches-container">
+      {#each $listOfMatchesScreenData.matches as match}
+        <div class="item">
+          <div class="listOfMatches-item-title">ID: {match.id}</div>
+          <div class="amountOfPlayers-info">
+            Players: {match.players.length}/{match.requiredAmountOfPlayers}
+            {#each match.players as player, i}
+              <div class="player">{i + 1}. {player.name}</div>
+            {/each}
+          </div>
+          <button
+            class="button"
+            on:click={() => {
+              onJoinToMatch(match.id);
+            }}>JOIN</button
+          >
         </div>
-        <div>
-          {#each match.players as player}
-            <div>{player.name}</div>
-          {/each}
-        </div>
-        <button
-          on:click={() => {
-            onJoinToMatch(match.id);
-          }}>JOIN</button
-        >
-      </div>
-    {/each}
+      {/each}
+    </div>
   </div>
 </div>
 
@@ -77,10 +83,5 @@
     justify-content: center;
     align-items: center;
     gap: 20px;
-  }
-
-  .listOfMatches-item {
-    padding: 10px;
-    background-color: lightgray;
   }
 </style>

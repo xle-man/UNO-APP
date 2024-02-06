@@ -78,8 +78,13 @@
 </script>
 
 <div class="game-container" in:fade={{ duration: 500 }}>
-  <div>
-    Amount of available cards: {$gameScreenData.match.amountOfAvailableCards}
+  <div class="amountOfAvailableCards">
+    <div>
+      Amount of available cards: {$gameScreenData.match.amountOfAvailableCards}
+    </div>
+    {#if $gameScreenData.match.wildColor}
+      <div>Wild color: {$gameScreenData.match.wildColor}</div>
+    {/if}
   </div>
 
   <div class="last-played-card-container">
@@ -90,17 +95,13 @@
     />
   </div>
 
-  {#if $gameScreenData.match.wildColor}
-    <div>wild color: {$gameScreenData.match.wildColor}</div>
-  {/if}
-
   <!-- fixed element -->
   <div class="other-players-info-container">
     <!--z-index[10]-->
     {#each $gameScreenData.match.players as player}
       <div class="other-players-info-box">
         <div class="other-player-info-avatar">
-          <IconUser color="black" strokeWidth={2} />
+          <IconUser color="var(--gray)" strokeWidth={3} />
         </div>
         <div class="other-player-info-amountOfCards">
           {player.amountOfCards}
@@ -190,6 +191,7 @@
         </button>
       {/if}
       <button
+        class="button"
         disabled={$gameScreenData.match.activePlayer !=
           $gameScreenData.player.id}
         on:click={onDrawAction}
@@ -197,6 +199,7 @@
         DRAW
       </button>
       <button
+        class="button"
         disabled={$gameScreenData.match.activePlayer !=
           $gameScreenData.player.id}
         on:click={onConfirmAction}
@@ -249,14 +252,14 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
   }
 
   .other-player-info-avatar {
     width: 60px;
     height: 60px;
     padding: 5px;
-    border: 2px solid black;
+    border: 3px solid var(--gray);
   }
 
   .other-player-info-amountOfCards {
@@ -283,6 +286,19 @@
     padding: 5px;
   }
 
+  .amountOfAvailableCards {
+    position: fixed;
+    z-index: 30;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 5px;
+  }
+
   .button-container {
     width: 100%;
     display: flex;
@@ -291,7 +307,6 @@
     align-items: center;
     gap: 10px;
     padding: 5px;
-    background-color: rgb(200, 200, 200);
   }
 
   /* --- wild color options --- */

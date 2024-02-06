@@ -8,6 +8,7 @@
   } from "../javascripts/AppStore";
   import CONSTANTS from "../javascripts/Constants";
   import { fade } from "svelte/transition";
+  import IconUser from "./IconUser.svelte";
 
   let showDialog = get(playerName) ? false : true;
   let playerNameInputValue;
@@ -64,37 +65,46 @@
   }
 </script>
 
-<div class="screen-container" in:fade={{ duration: 500 }}>
-  <div>
+<div class="screen-container bordered-bottom" in:fade={{ duration: 500 }}>
+  <div class="box">
     <div>
-      <button on:click={onCreateGame}>CREATE</button>
-      <div>
-        amount of players:
-        {#each $amountOfPlayersButtons as button}
-          <button
-            class={`amountOfPlayersButton ${
-              button.isSelected ? "amountOfPlayersButton-selected" : ""
-            }`}
-            on:click={() => {
-              changeAmountOfPlayersButton(button.value);
-            }}
-          >
-            {button.value}
-          </button>
-        {/each}
-      </div>
+      <div class="heading">GAME</div>
     </div>
-    <div>
-      <button on:click={onJoinToGame}>JOIN</button>
+    <div class="boxes">
+      <div>
+        <button class="button" on:click={onJoinToGame}>JOIN</button>
+      </div>
+      <div class="vertical-line"></div>
+      <div class="create-box">
+        <button class="button" on:click={onCreateGame}>CREATE</button>
+        <div>Players:</div>
+        <div class="amountOfPlayersContainer">
+          {#each $amountOfPlayersButtons as button}
+            <button
+              class={`amountOfPlayersButton ${
+                button.isSelected ? "amountOfPlayersButton-selected" : ""
+              }`}
+              on:click={() => {
+                changeAmountOfPlayersButton(button.value);
+              }}
+            >
+              {button.value}
+            </button>
+          {/each}
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- fixed element -->
   {#if showDialog}
-    <div class="dialog-container">
+    <div class="dialog-container bordered-bottom">
       <!--z-index[10]-->
-      <div class="dialog-box">
-        <div class="dialog-title">BEFORE YOU BEGIN</div>
+      <div class="box">
+        <div>
+          <div class="heading">UNO</div>
+          <div class="subheading">Card Game</div>
+        </div>
         <div class="input-item">
           <input
             type="text"
@@ -104,7 +114,7 @@
           />
           <label for="playerName">Your name</label>
         </div>
-        <button on:click={setName}>SET</button>
+        <button class="button" on:click={setName}>SET</button>
       </div>
     </div>
   {/if}
@@ -120,6 +130,19 @@
     align-items: center;
   }
 
+  .vertical-line {
+    height: 150px;
+    border-left: 3px solid var(--zinc-700);
+    border-radius: 10px;
+  }
+
+  .boxes {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+  }
+
   /* --- dialog --- */
   .dialog-container {
     position: fixed;
@@ -129,53 +152,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(1.2px);
+    background-color: var(--zinc-800);
   }
 
-  .dialog-box {
-    padding: 10px 20px;
+  .white {
+    color: var(--white) !important;
+  }
+
+  .create-box {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 25px;
-    border: 5px solid var(--zinc-700);
-    border-radius: 25px;
-    padding: 60px;
-  }
-
-  .heading {
-    font-family: "TommySoftMedium";
-    color: var(--yellow);
-    font-size: 100px;
-    font-weight: bold;
-    text-align: center;
-  }
-
-  .subheading {
-    font-family: "TommySoftMedium";
-    color: var(--yellow);
-    text-align: center;
-    font-size: 25px;
-    font-weight: bold;
-  }
-
-  .button {
-    background-color: var(--zinc-800);
-    border: 2px solid var(--zinc-700);
-    height: 40px;
-    color: var(--gray);
-    font-size: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    transition: ease-in-out 0.2s;
-  }
-
-  .button:hover {
-    cursor: pointer;
-    border-color: var(--white);
-    color: var(--white);
+    gap: 20px;
   }
 
   .input-item {
@@ -190,6 +179,7 @@
     outline: none;
     color: white;
     transition: ease-in-out 0.2s;
+    border-radius: 10px;
   }
 
   .input-item input:focus {
@@ -224,14 +214,27 @@
   }
 
   /* --- screen --- */
+  .amountOfPlayersContainer {
+    display: flex;
+    gap: 5px;
+  }
+
   .amountOfPlayersButton {
-    background-color: gray;
     border: none;
     padding: 10px;
     transition: 0.3s;
+    border: 2px solid var(--zinc-700);
+    background-color: var(--zinc-800);
+    color: var(--zinc-700);
+    border-radius: 10px;
+  }
+
+  .amountOfPlayersButton:hover {
+    cursor: pointer;
   }
 
   .amountOfPlayersButton-selected {
-    background-color: goldenrod;
+    border-color: var(--white);
+    color: var(--white);
   }
 </style>
