@@ -32,4 +32,47 @@ function getIndexOfPlayer(socketId, players) {
   return -1;
 }
 
-module.exports = { shuffleArray, compareCards, getIndexOfPlayer };
+function changeActivePlayer(match) {
+  const indexOfActivePlayer = getIndexOfPlayer(
+    match.activePlayer,
+    match.players
+  );
+  let indexOfNextActivePlayer = null;
+  if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
+    if (indexOfActivePlayer == match.players.length - 1)
+      indexOfNextActivePlayer = 0;
+    else indexOfNextActivePlayer = indexOfActivePlayer + 1;
+  } else {
+    if (indexOfActivePlayer == 0)
+      indexOfNextActivePlayer = match.players.length - 1;
+    else indexOfNextActivePlayer = indexOfActivePlayer - 1;
+  }
+  match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
+  return indexOfNextActivePlayer;
+}
+
+function getCardsToNextPlayer(match, indexOfNextActivePlayer, amount) {
+  for (let i = 0; i < amount; i++) {
+    if (match.availableCards.length === 0) {
+      const lastCard = match.playedCards.shift();
+      match.availableCards = shuffleArray(match.playedCards);
+      match.playedCards = [lastCard];
+    }
+    match.players[indexOfNextActivePlayer].cards.push(
+      match.availableCards.shift()
+    );
+  }
+}
+
+function callbackToClient(result, reason, data, callback) {
+  callback({ result, reason, data });
+}
+
+module.exports = {
+  shuffleArray,
+  compareCards,
+  getIndexOfPlayer,
+  changeActivePlayer,
+  getCardsToNextPlayer,
+  callbackToClient,
+};
