@@ -11,6 +11,7 @@
     resetListOfMatchesScreenData,
   } from "../javascripts/AppStore";
   import CONSTANTS from "../javascripts/Constants";
+  import IconRefresh from "./IconRefresh.svelte";
 
   onMount(() => {
     get(socketIO).on("updateAvailableMatches", (list) => {
@@ -42,13 +43,24 @@
       <div class="heading">JOIN</div>
       <div class="subheading">List of matches</div>
     </div>
-    <button
-      class="button"
-      on:click={() => {
-        switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
-      }}>HOME</button
-    >
-    <button class="button" on:click={onRefresh}>REFRESH</button>
+    <div class="buttons-container">
+      <button
+        class="button"
+        on:click={() => {
+          switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
+        }}>HOME</button
+      >
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="refresh-button" on:click={onRefresh}>
+        <IconRefresh color="#52525b" width=2 />
+      </div>
+      <!-- <button
+        class="button"
+        on:click={onRefresh}>REFRESH</button
+      > -->
+    </div>
+    
 
     <div class="listOfMatches-container">
       {#if $listOfMatchesScreenData.matches.length > 0 && !$listOfMatchesScreenData.isFetching}
@@ -94,5 +106,22 @@
     justify-content: flex-start;
     align-items: center;
     gap: 20px;
+  }
+
+
+  .buttons-container {
+    display: flex;
+    gap: 10px;
+  }
+
+  .refresh-button {
+    background-color: var(--zinc-800);
+    border: 2px solid var(--zinc-700);
+    height: 40px;
+    color: var(--gray);
+    font-size: 24px;
+    padding: 5px;
+    transition: ease-in-out 0.2s;
+    border-radius: 10px;
   }
 </style>
