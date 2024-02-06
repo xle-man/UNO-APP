@@ -7,6 +7,7 @@
     createGame,
   } from "../javascripts/AppStore";
   import CONSTANTS from "../javascripts/Constants";
+  import { fade } from "svelte/transition";
 
   let showDialog = get(playerName) ? false : true;
   let playerNameInputValue;

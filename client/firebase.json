@@ -1,7 +1,6 @@
 {
   "hosting": {
-    "site": "uno-app-server",
-    "public": "public",
+    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",
