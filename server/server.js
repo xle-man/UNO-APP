@@ -370,7 +370,7 @@ io.on("connection", (socket) => {
         playedCards: match.playedCards,
         wildColor: match.wildColor,
         order: match.order,
-        winner: match.winner,
+        winner: match.winner
       };
 
       // emitting of event "updateGameData" to each player in match

@@ -2,7 +2,13 @@
   import { onDestroy, onMount } from "svelte";
   import { Router, Route } from "svelte-routing";
   import { io } from "socket.io-client";
-  import { gameScreenData, isSocketConnected, screen, socketIO, waitingForPlayersScreenData } from "./javascripts/AppStore";
+  import {
+    gameScreenData,
+    isSocketConnected,
+    screen,
+    socketIO,
+    waitingForPlayersScreenData,
+  } from "./javascripts/AppStore";
   import CONSTANTS from "./javascripts/Constants";
 
   import Alert from "./components/Alert.svelte";
@@ -10,7 +16,7 @@
   import MainScreen from "./components/MainScreen.svelte";
   import WaitingForGameScreen from "./components/WaitingForGameScreen.svelte";
   import ListOfMatchesScreen from "./components/ListOfMatchesScreen.svelte";
-    import { get } from "svelte/store";
+  import { get } from "svelte/store";
 
   let socket = io(CONSTANTS.SERVER_URL);
   socketIO.set(socket);
@@ -30,7 +36,6 @@
     console.log("DISCONNECT");
     isSocketConnected.set(false);
   });
-
 </script>
 
 <div class="main-container">
@@ -51,7 +56,6 @@
 
 <Alert />
 
-
 <style>
   .main-container {
     width: 100%;
@@ -59,7 +63,5 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgb(227, 227, 227); 
-    /* background-color: rgb(29, 29, 35);  */
   }
 </style>
