@@ -49,6 +49,10 @@
     drawCard();
   }
 
+  function onUnoAction() {
+
+  }
+
   function onChangeWildColor(option) {
     changeWildColorOption(option);
   }
@@ -180,6 +184,11 @@
       </div>
     {/if}
     <div class="button-container">
+      {#if $gameScreenData.player.cards.length === 1}
+        <button on:click={onUnoAction}>
+          UNO
+        </button>
+      {/if}
       <button
         disabled={$gameScreenData.match.activePlayer !=
           $gameScreenData.player.id}
