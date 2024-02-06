@@ -73,12 +73,6 @@ io.on("connection", (socket) => {
     async (playerName, requiredAmountOfPlayers, callback) => {
       const players = [];
       players.push({ name: playerName, socketId: socket.id });
-      console.log(
-        "createGame:",
-        playerName,
-        socket.id,
-        requiredAmountOfPlayers
-      );
 
       const docRef = await addDoc(matchesRef, {
         state: CONSTANTS.GAME_STATES.WAITING_FOR_PLAYERS,
@@ -136,8 +130,6 @@ io.on("connection", (socket) => {
       socketId: socket.id,
       name: playerName,
     });
-
-    console.log("Players: ", updatedPlayersList);
 
     match.players = updatedPlayersList;
     await updateDoc(docRef, {
@@ -219,8 +211,6 @@ io.on("connection", (socket) => {
             amountOfCards: player.cards.length,
           },
         });
-
-        // console.log(`${player.name}'s data to send:`, initDataToSend);
 
         try {
           io.to(player.socketId).emit("startGame", initDataToSend);
@@ -383,11 +373,6 @@ io.on("connection", (socket) => {
           },
         });
 
-        // console.log(
-        //   `${player.name}'s updated gameData to send:`,
-        //   updatedGameDataToSend
-        // );
-
         try {
           io.to(player.socketId).emit("updateGameData", updatedGameDataToSend);
         } catch (error) {
@@ -461,11 +446,6 @@ io.on("connection", (socket) => {
         },
       });
 
-      // console.log(
-      //   `${player.name}'s updated gameData to send:`,
-      //   updatedGameDataToSend
-      // );
-
       try {
         io.to(player.socketId).emit("updateGameData", updatedGameDataToSend);
       } catch (error) {
@@ -495,7 +475,7 @@ io.on("connection", (socket) => {
               matchID = doc.id;
               match = data;
 
-              console.log(matchID);
+              console.log("match", matchID);
               return;
             }
           }
@@ -509,7 +489,6 @@ io.on("connection", (socket) => {
       const activePlayers = match.players.filter((el) => !el.afk);
 
       if (activePlayers.length < 2) {
-        console.log("activePlayers", activePlayers);
         match.state = CONSTANTS.GAME_STATES.FINISHED;
         match.winner = activePlayers[0].socketId;
       }
