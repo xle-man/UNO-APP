@@ -49,9 +49,7 @@
     drawCard();
   }
 
-  function onUnoAction() {
-
-  }
+  function onUnoAction() {}
 
   function onChangeWildColor(option) {
     changeWildColorOption(option);
@@ -186,9 +184,7 @@
     {/if}
     <div class="button-container">
       {#if $gameScreenData.player.cards.length === 1}
-        <button on:click={onUnoAction}>
-          UNO
-        </button>
+        <button on:click={onUnoAction}> UNO </button>
       {/if}
       <button
         class="button"
@@ -217,13 +213,15 @@
       out:fade={{ duration: 500 }}
     >
       <!--z-index[40]-->
-      <div class="game-over-title">GAME OVER</div>
-      <div class="winner-text">
-        Player <span style="font-weight: bold;"
+      <div class="game-over-title heading">GAME OVER</div>
+      <div class="winner-text subheading font-weight-normal">
+        Player <span class="winner-span"
           >{getPlayerName($gameScreenData.match.winner).name}</span
-        > won the game
+        > won the game!
       </div>
-      <button on:click={onHomeButtonClicked}>HOME</button>
+      <button class="button home-button" on:click={onHomeButtonClicked}
+        >HOME</button
+      >
     </div>
   {/if}
 
@@ -365,15 +363,23 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
+    gap: 20px;
+    background-color: rgba(0, 0, 0, 0.75);
     backdrop-filter: blur(4px);
   }
 
-  .winner-text {
+  .game-over-title {
+    color: var(--white);
   }
 
-  .game-over-options-container {
+  .home-button {
+    border-color: var(--white);
+    color: var(--white);
+    background: transparent;
+  }
+
+  .home-button:hover {
+    background-color: rgba(255, 255, 255, 0.4);
   }
 
   /* --- game container --- */
@@ -449,6 +455,11 @@
     transform: var(--card-transform) scale(1.2);
     background: linear-gradient(var(--angle), #818181, #adadad, #ffffff);
     animation: selected-card 3s linear infinite;
+  }
+
+  .winner-span {
+    font-family: "TommySoftMedium";
+    font-size: inherit;
   }
 
   @keyframes selected-card {

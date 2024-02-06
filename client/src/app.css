@@ -74,11 +74,9 @@
 }
 
 .subheading {
-  font-family: "TommySoftMedium";
   color: var(--white);
   text-align: center;
   font-size: 25px;
-  font-weight: bold;
 }
 
 .button {
@@ -108,4 +106,9 @@
   color: var(--white);
   border-radius: 10px;
   width: 100%;
+  position: relative;
+}
+
+.font-weight-normal {
+  font-weight: normal !important;
 }

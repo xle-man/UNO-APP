@@ -71,11 +71,11 @@
       <div class="heading">GAME</div>
     </div>
     <div class="boxes">
-      <div>
+      <div class="padding-top">
         <button class="button" on:click={onJoinToGame}>JOIN</button>
       </div>
       <div class="vertical-line"></div>
-      <div class="create-box">
+      <div class="create-box padding-top">
         <button class="button" on:click={onCreateGame}>CREATE</button>
         <div>Players:</div>
         <div class="amountOfPlayersContainer">
@@ -130,8 +130,12 @@
     align-items: center;
   }
 
+  .padding-top {
+    padding-top: 10px;
+  }
+
   .vertical-line {
-    height: 150px;
+    height: 165px;
     border-left: 3px solid var(--zinc-700);
     border-radius: 10px;
   }
@@ -139,7 +143,7 @@
   .boxes {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     gap: 40px;
   }
 

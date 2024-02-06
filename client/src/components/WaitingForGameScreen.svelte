@@ -52,14 +52,25 @@
     <div>
       <div class="heading">MATCH</div>
     </div>
-    <div class="item">
-      <div>ID: {$waitingForPlayersScreenData.matchID}</div>
+    <div class="item match-item">
+      <div class="inline-badge-container">
+        <div class="badge">ID</div>
+        <div>{$waitingForPlayersScreenData.matchID}</div>
+      </div>
+      <div class="players-badge">
+        <div>Players</div>
+
+        <!-- <div>
+          {$waitingForPlayersScreenData.players
+            .length}/{$waitingForPlayersScreenData.requiredAmountOfPlayers}
+        </div> -->
+      </div>
+
       <div class="playersList-container">
-        Players: {$waitingForPlayersScreenData.players
-          .length}/{$waitingForPlayersScreenData.requiredAmountOfPlayers}
         {#each $waitingForPlayersScreenData.players as player, i}
-          <div class="playersList-item">
-            {i + 1}. {player.name}
+          <div class="inline-badge-container">
+            <div class="badge">{i + 1}</div>
+            <div>{player.name}</div>
           </div>
         {/each}
       </div>
@@ -75,6 +86,51 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+  }
+
+  .numberOfPlayers {
+    position: absolute;
+    top: 7.5px;
+    right: 7.5px;
+    border: 1px solid var(--yellow);
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .match-item {
+    border: none !important;
+    align-items: flex-start;
+  }
+
+  .badge {
+    border: 1px solid var(--yellow);
+    border-radius: 5px;
+    padding: 10px 20px 10px 20px;
+    display: flex;
+    justify-items: center;
     align-items: center;
+  }
+
+  .inline-badge-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .players-badge {
+    border: 1px solid var(--yellow);
+    border-radius: 5px;
+    padding: 10px 20px 10px 20px;
+    display: inline-flex;
+    justify-items: center;
+    text-align: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  .players-badge div {
+    width: max-content;
   }
 </style>
