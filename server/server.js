@@ -229,7 +229,6 @@ io.on("connection", (socket) => {
     const updatedPlayersList = match.players.filter(
       (player) => player.socketId != socket.id
     );
-    console.log("quitMatch (updated list of players):", updatedPlayersList);
 
     if (updatedPlayersList.length) {
       await updateDoc(docRef, {
@@ -361,7 +360,7 @@ io.on("connection", (socket) => {
         playedCards: match.playedCards,
         wildColor: match.wildColor,
         order: match.order,
-        winner: match.winner
+        winner: match.winner,
       };
 
       // emitting of event "updateGameData" to each player in match
@@ -485,8 +484,8 @@ io.on("connection", (socket) => {
 
     //update of match in firestore
     if (matchID && match) {
-      const docRef = doc(db, "matches", matchID);
-      console.log("state", match.state);
+      let docRef = doc(db, "matches", matchID);
+      console.log(match.state);
 
       if (match.state == CONSTANTS.GAME_STATES.WAITING_FOR_PLAYERS) {
         const updatedPlayersList = match.players.filter(
@@ -517,6 +516,7 @@ io.on("connection", (socket) => {
           updateAvailableMatches();
         }
       } else if (match.state == CONSTANTS.GAME_STATES.ACTIVE) {
+        docRef = doc(db, "matches", matchID);
         changeActivePlayer(match);
         const activePlayers = match.players.filter((el) => !el.afk);
 
@@ -526,6 +526,7 @@ io.on("connection", (socket) => {
         }
 
         //update match in firebase
+        console.log(match);
         updateDoc(docRef, match);
 
         const updatedGameData = {
