@@ -23,6 +23,8 @@
 
   import GameAlert from "./GameAlert.svelte";
   import IconUser from "./IconUser.svelte";
+    import IconConfirmButton from "./IconConfirmButton.svelte";
+    import IconDrawButton from "./IconDrawButton.svelte";
 
   onMount(() => {
     get(socketIO).on("updateGameData", (data) => {
@@ -183,10 +185,10 @@
       </div>
     {/if}
     <div class="button-container">
-      {#if $gameScreenData.player.cards.length === 1}
+      <!-- {#if $gameScreenData.player.cards.length === 1}
         <button on:click={onUnoAction}> UNO </button>
-      {/if}
-      <button
+      {/if} -->
+      <!-- <button
         class="button"
         disabled={$gameScreenData.match.activePlayer !=
           $gameScreenData.player.id}
@@ -201,7 +203,9 @@
         on:click={onConfirmAction}
       >
         CONFIRM
-      </button>
+      </button> -->
+      <IconDrawButton color="#767676" width=2 onclick={onDrawAction} /> 
+      <IconConfirmButton color="#767676" width=2 onclick={onConfirmAction} />
     </div>
   </div>
 

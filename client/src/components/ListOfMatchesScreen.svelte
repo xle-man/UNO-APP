@@ -11,7 +11,7 @@
     resetListOfMatchesScreenData,
   } from "../javascripts/AppStore";
   import CONSTANTS from "../javascripts/Constants";
-  import IconRefresh from "./IconRefresh.svelte";
+  import IconRefreshButton from "./IconRefreshButton.svelte";
 
   onMount(() => {
     get(socketIO).on("updateAvailableMatches", (list) => {
@@ -50,15 +50,7 @@
           switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
         }}>HOME</button
       >
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="refresh-button" on:click={onRefresh}>
-        <IconRefresh color="#52525b" width=2 />
-      </div>
-      <!-- <button
-        class="button"
-        on:click={onRefresh}>REFRESH</button
-      > -->
+      <IconRefreshButton color="#767676" width=2 onclick={onRefresh}/>
     </div>
     
 
@@ -82,9 +74,9 @@
           </div>
         {/each}
       {:else if $listOfMatchesScreenData.matches.length === 0 && !$listOfMatchesScreenData.isFetching}
-        brak matchów
+        <div class="list-status">There are nothing to display</div>
       {:else}
-        ładowanie
+        <div class="list-status">fetching...</div>
       {/if}
     </div>
   </div>
@@ -114,14 +106,7 @@
     gap: 10px;
   }
 
-  .refresh-button {
-    background-color: var(--zinc-800);
-    border: 2px solid var(--zinc-700);
-    height: 40px;
+  .list-status {
     color: var(--gray);
-    font-size: 24px;
-    padding: 5px;
-    transition: ease-in-out 0.2s;
-    border-radius: 10px;
   }
 </style>
