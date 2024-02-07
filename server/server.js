@@ -23,7 +23,6 @@ const {
   doc,
   deleteDoc,
 } = require("firebase/firestore");
-const { constants } = require("buffer");
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -175,7 +174,10 @@ io.on("connection", (socket) => {
 
       //choose first card
       const firstCard = availableCards.filter((el) => !el.isSpecial).shift();
-      availableCards = availableCards.filter((el) => el.src !== firstCard.src);
+      // availableCards = availableCards.filter((el) => el.src !== firstCard.src);
+      availableCards = availableCards.filter(
+        (el) => el.src !== firstCard.src && el.symbol < 1
+      );
 
       await updateDoc(docRef, {
         players: updatedPlayersList,
@@ -213,9 +215,6 @@ io.on("connection", (socket) => {
             amountOfCards: player.cards.length,
           },
         });
-
-        console.log("startGame", match.state);
-        // console.log("players", match.players);
 
         try {
           io.to(player.socketId).emit("startGame", initDataToSend);
@@ -405,7 +404,7 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // handling of played card
+    // handling of drawed card
     if (match.availableCards.length > 0) {
       player.cards.push(match.availableCards.shift());
     } else {
@@ -520,13 +519,10 @@ io.on("connection", (socket) => {
           updateAvailableMatches();
         }
       } else if (match.state == CONSTANTS.GAME_STATES.ACTIVE) {
-        console.log("other players", match.players);
-
         changeActivePlayer(match);
         const activePlayers = match.players.filter((el) => !el.afk);
 
         if (activePlayers.length < 2) {
-          console.log("set Finished");
           match.state = CONSTANTS.GAME_STATES.FINISHED;
           match.winner = activePlayers[0].socketId;
           await deleteDoc(docRef);
