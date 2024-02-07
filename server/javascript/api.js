@@ -33,38 +33,29 @@ function getIndexOfPlayer(socketId, players) {
 }
 
 function changeActivePlayer(match) {
-  console.log(match);
   const indexOfActivePlayer = getIndexOfPlayer(
     match.activePlayer,
     match.players
   );
 
-  let indexOfNextActivePlayer = null;
+  let indexOfNextActivePlayer = indexOfActivePlayer;
 
   if (match.order == CONSTANTS.ORDER.CLOCKWISE) {
-    if (indexOfActivePlayer == match.players.length - 1)
-      indexOfNextActivePlayer = 0;
-    else indexOfNextActivePlayer = indexOfActivePlayer + 1;
-
-    while (match.players[indexOfNextActivePlayer].afk) {
+    do {
       if (indexOfNextActivePlayer == match.players.length - 1)
         indexOfNextActivePlayer = 0;
       else indexOfNextActivePlayer++;
-    }
+    } while (match.players[indexOfNextActivePlayer].afk);
   } else {
-    if (indexOfActivePlayer == 0)
-      indexOfNextActivePlayer = match.players.length - 1;
-    else indexOfNextActivePlayer = indexOfActivePlayer - 1;
-
-    while (match.players[indexOfNextActivePlayer].afk) {
+    do {
       if (indexOfNextActivePlayer == 0)
         indexOfNextActivePlayer = match.players.length - 1;
       else indexOfNextActivePlayer--;
-    }
+    } while (match.players[indexOfNextActivePlayer].afk);
   }
 
   match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
-  console.log("activePlayer", match.activePlayer);
+  console.log("activePlayer", match.players[indexOfNextActivePlayer].name);
   return indexOfNextActivePlayer;
 }
 

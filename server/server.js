@@ -202,6 +202,7 @@ io.on("connection", (socket) => {
           };
         }),
         playedCards: [firstCard],
+        state: CONSTANTS.GAME_STATES.ACTIVE,
       };
 
       updatedPlayersList.forEach((player) => {
@@ -212,6 +213,9 @@ io.on("connection", (socket) => {
             amountOfCards: player.cards.length,
           },
         });
+
+        console.log("startGame", match.state);
+        // console.log("players", match.players);
 
         try {
           io.to(player.socketId).emit("startGame", initDataToSend);
@@ -340,10 +344,12 @@ io.on("connection", (socket) => {
       if (player.cards.length === 0) {
         match.winner = player.socketId;
         match.state = CONSTANTS.GAME_STATES.FINISHED;
+        await deleteDoc(docRef);
+      } else {
+        await updateDoc(docRef, match);
       }
 
       // updating of match in datastore
-      await updateDoc(docRef, match);
 
       // prepared data sending to client [remember the security of private data]
       const updatedGameData = {
@@ -468,15 +474,13 @@ io.on("connection", (socket) => {
     await getDocs(matchesRef).then((snap) => {
       snap.docs.map((doc) => {
         const data = doc.data();
-        matchID = doc.id;
-        match = data;
 
         data.players.map((player) => {
-          if (data.state === CONSTANTS.GAME_STATES.ACTIVE) {
-            if (player.socketId === socket.id) {
-              player.afk = true;
-              return;
-            }
+          if (player.socketId === socket.id) {
+            player.afk = true;
+            matchID = doc.id;
+            match = data;
+            return;
           }
         });
       });
@@ -484,8 +488,8 @@ io.on("connection", (socket) => {
 
     //update of match in firestore
     if (matchID && match) {
+      console.log("disconnect", match.state, matchID);
       let docRef = doc(db, "matches", matchID);
-      console.log(match.state);
 
       if (match.state == CONSTANTS.GAME_STATES.WAITING_FOR_PLAYERS) {
         const updatedPlayersList = match.players.filter(
@@ -516,18 +520,20 @@ io.on("connection", (socket) => {
           updateAvailableMatches();
         }
       } else if (match.state == CONSTANTS.GAME_STATES.ACTIVE) {
-        docRef = doc(db, "matches", matchID);
+        console.log("other players", match.players);
+
         changeActivePlayer(match);
         const activePlayers = match.players.filter((el) => !el.afk);
 
         if (activePlayers.length < 2) {
+          console.log("set Finished");
           match.state = CONSTANTS.GAME_STATES.FINISHED;
           match.winner = activePlayers[0].socketId;
+          await deleteDoc(docRef);
+        } else {
+          //update match in firebase
+          await updateDoc(docRef, match);
         }
-
-        //update match in firebase
-        console.log(match);
-        updateDoc(docRef, match);
 
         const updatedGameData = {
           activePlayer: match.activePlayer,
