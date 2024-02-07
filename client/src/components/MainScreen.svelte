@@ -65,7 +65,7 @@
   }
 </script>
 
-<div class="screen-container bordered-bottom" in:fade={{ duration: 500 }}>
+<div class="screen-container" in:fade={{ duration: 500 }}>
   <div class="box">
     <div>
       <div class="heading">GAME</div>
@@ -98,7 +98,7 @@
 
   <!-- fixed element -->
   {#if showDialog}
-    <div class="dialog-container bordered-bottom">
+    <div class="dialog-container">
       <!--z-index[10]-->
       <div class="box">
         <div>

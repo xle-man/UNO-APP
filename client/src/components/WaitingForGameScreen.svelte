@@ -10,6 +10,7 @@
     gameScreenData,
     resetWaitingForPlayersScreenData,
   } from "../javascripts/AppStore";
+  import IconUser from "./IconUser.svelte";
   import CONSTANTS from "../javascripts/Constants";
 
   onMount(() => {
@@ -55,26 +56,32 @@
     <div class="item match-item">
       <div class="inline-badge-container">
         <div class="badge">ID</div>
-        <div>{$waitingForPlayersScreenData.matchID}</div>
+        <div>
+          {$waitingForPlayersScreenData.matchID}
+        </div>
       </div>
-      <div class="players-badge">
-        <div>Players</div>
-
-        <!-- <div>
+      <hr class="hr" />
+      <div class="players-heading-container">
+        <div class="heading players-heading">Players</div>
+        <div class="numberOfPlayers">
           {$waitingForPlayersScreenData.players
             .length}/{$waitingForPlayersScreenData.requiredAmountOfPlayers}
-        </div> -->
+        </div>
       </div>
-
-      <div class="playersList-container">
+      <hr class="hr" />
+      <div class="players-list">
         {#each $waitingForPlayersScreenData.players as player, i}
-          <div class="inline-badge-container">
-            <div class="badge">{i + 1}</div>
-            <div>{player.name}</div>
+          <div class="player-item">
+            <div class="player-item-icon">
+              <IconUser strokeWidth={2} color="var(--white)" />
+            </div>
+            <p class="player-item-name">{player.name}</p>
           </div>
         {/each}
       </div>
-      <button class="button" on:click={onQuitMatch}>QUIT</button>
+      <div class="button-container">
+        <button class="button" on:click={onQuitMatch}>QUIT</button>
+      </div>
     </div>
   </div>
 </div>
@@ -89,48 +96,10 @@
     align-items: flex-start;
   }
 
-  .numberOfPlayers {
-    position: absolute;
-    top: 7.5px;
-    right: 7.5px;
-    border: 1px solid var(--yellow);
-    border-radius: 10px;
-    padding: 10px;
-  }
-
   .match-item {
     border: none !important;
-    align-items: flex-start;
-  }
-
-  .badge {
-    border: 1px solid var(--yellow);
-    border-radius: 5px;
-    padding: 10px 20px 10px 20px;
-    display: flex;
-    justify-items: center;
-    align-items: center;
-  }
-
-  .inline-badge-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     gap: 20px;
-  }
 
-  .players-badge {
-    border: 1px solid var(--yellow);
-    border-radius: 5px;
-    padding: 10px 20px 10px 20px;
-    display: inline-flex;
-    justify-items: center;
-    text-align: center;
-    align-items: center;
-    width: 100%;
-  }
-
-  .players-badge div {
-    width: max-content;
+    /* align-items: flex-start; */
   }
 </style>

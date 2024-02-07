@@ -38,7 +38,11 @@
   });
 </script>
 
-<div class="main-container">
+<div
+  class={`${
+    $screen != CONSTANTS.SCREEN.GAME_SCREEN ? "bordered-bottom" : ""
+  } main-container`}
+>
   {#if $isSocketConnected}
     {#if $screen == CONSTANTS.SCREEN.MAIN_SCREEN}
       <MainScreen />

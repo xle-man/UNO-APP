@@ -12,6 +12,7 @@
   } from "../javascripts/AppStore";
   import CONSTANTS from "../javascripts/Constants";
   import IconRefreshButton from "./IconRefreshButton.svelte";
+  import IconUser from "./IconUser.svelte";
 
   onMount(() => {
     get(socketIO).on("updateAvailableMatches", (list) => {
@@ -37,7 +38,7 @@
   }
 </script>
 
-<div class="screen-container bordered-bottom" in:fade={{ duration: 500 }}>
+<div class="screen-container" in:fade={{ duration: 500 }}>
   <div class="box">
     <div>
       <div class="heading">JOIN</div>
@@ -50,27 +51,44 @@
           switchScreen(CONSTANTS.SCREEN.MAIN_SCREEN);
         }}>HOME</button
       >
-      <IconRefreshButton color="#767676" width=2 onclick={onRefresh}/>
+      <IconRefreshButton color="#767676" width="2" onclick={onRefresh} />
     </div>
-    
 
     <div class="listOfMatches-container">
       {#if $listOfMatchesScreenData.matches.length > 0 && !$listOfMatchesScreenData.isFetching}
         {#each $listOfMatchesScreenData.matches as match}
-          <div class="item">
-            <div class="listOfMatches-item-title">ID: {match.id}</div>
-            <div class="amountOfPlayers-info">
-              Players: {match.players.length}/{match.requiredAmountOfPlayers}
-              {#each match.players as player, i}
-                <div class="player">{i + 1}. {player.name}</div>
+          <div class="item" style="min-width: 350px;">
+            <div class="list-inline-badge-container">
+              <div class="small-badge">ID</div>
+              <div class="match-id">
+                <div>{match.id}</div>
+              </div>
+              <div class="small-badge" style="border: 2px solid var(--yellow);">
+                {match.players.length}/{match.requiredAmountOfPlayers}
+              </div>
+            </div>
+            <hr class="hr" />
+            <div class="players-list" style="gap: 10px;">
+              {#each match.players as player}
+                <div class="player-item">
+                  <div
+                    class="player-item-icon"
+                    style="width: 30px; height: 30px; padding: 4px; border-width: 1.5px;"
+                  >
+                    <IconUser strokeWidth={1.5} color="var(--white)" />
+                  </div>
+                  <p class="player-item-name">{player.name}</p>
+                </div>
               {/each}
             </div>
-            <button
-              class="button"
-              on:click={() => {
-                onJoinToMatch(match.id);
-              }}>JOIN</button
-            >
+            <div class="button-container">
+              <button
+                class="button"
+                on:click={() => {
+                  onJoinToMatch(match.id);
+                }}>JOIN</button
+              >
+            </div>
           </div>
         {/each}
       {:else if $listOfMatchesScreenData.matches.length === 0 && !$listOfMatchesScreenData.isFetching}
@@ -100,7 +118,6 @@
     gap: 20px;
   }
 
-
   .buttons-container {
     display: flex;
     gap: 10px;
@@ -108,5 +125,12 @@
 
   .list-status {
     color: var(--gray);
+  }
+
+  .match-id {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
   }
 </style>
