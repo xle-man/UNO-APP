@@ -6,7 +6,7 @@
     export let onclick;
 </script>
 
-<button class="draw-button" on:click={onclick} disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id}>
+<button class="action-button" on:click={onclick} disabled={$gameScreenData.match.activePlayer != $gameScreenData.player.id}>
     <svg
         xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -30,7 +30,7 @@
 </button>
 
 <style>
-    .draw-button {
+    .action-button {
         background-color: var(--zinc-800);
         border: 2px solid var(--zinc-700);
         height: 60px;
@@ -41,21 +41,20 @@
         border-radius: 10px;
     }
 
-    .draw-button:not(:disabled):hover {
-        cursor: pointer;
+    .action-button:not(:disabled) {
         border-color: var(--white);
         color: var(--white);
     }
 
-    /* .draw-button:disabled {
-        opacity: 0.5;
-    } */
+    .action-button:not(:disabled) .path-stroke {
+        stroke: white;
+    }
+
+    .action-button:not(:disabled):hover {
+        cursor: pointer;
+    }
 
     .path-stroke {
         transition: ease-in-out 0.2s;
-    }
-
-    .draw-button:not(:disabled):hover .path-stroke {
-        stroke: white;
     }
 </style>

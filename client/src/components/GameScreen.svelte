@@ -18,6 +18,8 @@
     drawCard,
     resetGameScreenData,
     getPlayerName,
+    getActivePlayerIndex,
+    convertWildColor,
   } from "../javascripts/AppStore";
   import CONSTANTS from "../javascripts/Constants";
 
@@ -25,6 +27,13 @@
   import IconUser from "./IconUser.svelte";
     import IconConfirmButton from "./IconConfirmButton.svelte";
     import IconDrawButton from "./IconDrawButton.svelte";
+    import IconPile from "./IconPile.svelte";
+
+  let indexOfActivePlayer = 0;
+
+  $: if($gameScreenData.match) {
+    indexOfActivePlayer = getActivePlayerIndex();
+  }
 
   onMount(() => {
     get(socketIO).on("updateGameData", (data) => {
@@ -78,16 +87,20 @@
 </script>
 
 <div class="game-container" in:fade={{ duration: 500 }}>
-  <div class="amountOfAvailableCards">
-    <div>
-      Amount of available cards: {$gameScreenData.match.amountOfAvailableCards}
+  <div class="top-right-fixed-container">
+    <div class="amountOfAvailableCards-box">
+      <IconPile width=2 color="#52525b" />
+      <div class="amountOfAvailableCards-text">
+        {$gameScreenData.match.amountOfAvailableCards}
+      </div>
+      <div class="amountOfAvailableCards-box-title">Pile</div>
     </div>
-    {#if $gameScreenData.match.wildColor}
-      <div>Wild color: {$gameScreenData.match.wildColor}</div>
-    {/if}
   </div>
 
   <div class="last-played-card-container">
+    {#if $gameScreenData.match.wildColor}
+      <div class="wildColor-box" style={`background-color: ${convertWildColor($gameScreenData.match.wildColor)};`} in:fade={{duration: 200}}></div>
+    {/if}
     <img
       src={`./assets/images/cards/${$gameScreenData.match.playedCards[0].src}.png`}
       alt={`${$gameScreenData.match.playedCards[0].src}_CARD`}
@@ -101,21 +114,22 @@
     {#each $gameScreenData.match.players as player}
       <div class="other-players-info-box">
         <div class="other-player-info-avatar">
-          <IconUser color="var(--gray)" strokeWidth={3} />
+          <IconUser color="var(--gray)" strokeWidth={2} />
         </div>
         <div class="other-player-info-amountOfCards">
           {player.amountOfCards}
         </div>
         <div
-          style={player.id == $gameScreenData.player.id ? "color: red;" : ""}
+          style={`color: ${player.id == $gameScreenData.player.id ? "var(--white)" : "var(--gray)"};`}
         >
           {player.name}
         </div>
-        {#if player.id == $gameScreenData.match.activePlayer}
-          <div>[active]</div>
+        {#if player.amountOfCards === 1}
+          <div class="uno-text-box" transition:fade={{duration: 500}}>UNO</div>
         {/if}
       </div>
     {/each}
+    <div class="active-player-marker" style={`transform: translateY(${5 + indexOfActivePlayer * 50 + indexOfActivePlayer * 10}px);`}></div>
   </div>
 
   <!-- fixed element -->
@@ -180,30 +194,12 @@
           <div
             class="wild-color-background"
             style={`transform: translateY(${$gameScreenData.wildColor.topOffset}px); background-color: ${$gameScreenData.wildColor.hex}`}
+            in:fade={{duration: 500}}
           ></div>
         {/if}
       </div>
     {/if}
     <div class="button-container">
-      <!-- {#if $gameScreenData.player.cards.length === 1}
-        <button on:click={onUnoAction}> UNO </button>
-      {/if} -->
-      <!-- <button
-        class="button"
-        disabled={$gameScreenData.match.activePlayer !=
-          $gameScreenData.player.id}
-        on:click={onDrawAction}
-      >
-        DRAW
-      </button>
-      <button
-        class="button"
-        disabled={$gameScreenData.match.activePlayer !=
-          $gameScreenData.player.id}
-        on:click={onConfirmAction}
-      >
-        CONFIRM
-      </button> -->
       <IconDrawButton color="#767676" width=2 onclick={onDrawAction} /> 
       <IconConfirmButton color="#767676" width=2 onclick={onConfirmAction} />
     </div>
@@ -217,11 +213,9 @@
       out:fade={{ duration: 500 }}
     >
       <!--z-index[40]-->
-      <div class="game-over-title heading">GAME OVER</div>
+      <div class="game-over-title heading">{$socketIO.id == $gameScreenData.match.winner ? "VICTORY" : "GAME OVER"}</div>
       <div class="winner-text subheading font-weight-normal">
-        Player <span class="winner-span"
-          >{getPlayerName($gameScreenData.match.winner).name}</span
-        > won the game!
+        {@html $socketIO.id == $gameScreenData.match.winner ? "" : `Player <span class="winner-span">${getPlayerName($gameScreenData.match.winner).name}</span> won the game!`}
       </div>
       <button class="button home-button" on:click={onHomeButtonClicked}
         >HOME</button
@@ -247,7 +241,31 @@
     align-items: flex-start;
     gap: 10px;
     padding: 5px;
+    padding-left: 15px;
   }
+
+  .active-player-marker {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background-color: var(--yellow);
+    width: 5px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    height: 50px;
+    transition: 0.5s ease-in-out;
+    /* animation: active-player-marker 2s ease-in-out infinite alternate; */
+  }
+
+  @keyframes active-player-marker {
+    0% {
+      background-color: var(--gray);
+    }
+    100% {
+      background-color: var(--white);
+    }
+  }
+
 
   .other-players-info-box {
     display: flex;
@@ -256,12 +274,15 @@
     align-items: center;
     gap: 10px;
   }
-
+  
   .other-player-info-avatar {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     padding: 5px;
-    border: 3px solid var(--gray);
+    border: 2px solid var(--gray);
+    background-color: var(--zinc-800);
+    border-radius: 10px;
+    padding: 5px;
   }
 
   .other-player-info-amountOfCards {
@@ -270,8 +291,32 @@
     justify-content: center;
     align-items: center;
     border-radius: 5px;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--gray);
+    color: var(--zinc-800);
     user-select: none;
+  }
+
+  .uno-text-box {
+    background-color: var(--zinc-800);
+    border: 2px solid var(--yellow);
+    color: var(--yellow);
+    font-size: 14px;
+    padding: 2.5px 5px;
+    transition: ease-in-out 0.2s;
+    animation: hithere 1.5s ease infinite;
+    border-radius: 10px;
+    margin-left: 10px;
+    user-select: none;
+  }
+
+  @keyframes hithere {
+      0%   { transform: scale(1,1)      translateY(0); }
+      7%  { transform: scale(1.1,.9)   translateY(0); }
+      21%  { transform: scale(.9,1.1)   translateY(-7.5px); }
+      35%  { transform: scale(1.05,.95) translateY(0); }
+      40%  { transform: scale(1,1)      translateY(-2.5px); }
+      44%  { transform: scale(1,1)      translateY(0); }
+      100% { transform: scale(1,1)      translateY(0); }
   }
 
   /* --- action menu --- */
@@ -288,7 +333,7 @@
     padding: 5px;
   }
 
-  .amountOfAvailableCards {
+  .top-right-fixed-container {
     position: fixed;
     z-index: 30;
     top: 5px;
@@ -301,6 +346,46 @@
     padding: 5px;
   }
 
+  .amountOfAvailableCards-box-title {
+    height: 20px;
+    font-size: 16px;
+    line-height: 20px;
+    position: absolute;
+    top: calc(0px - calc(20px / 2));
+    left: 10px;
+    padding: 0px 5px;
+    background-color: var(--zinc-800);
+    color: var(--zinc-700);
+    user-select: none;
+  }
+
+  .amountOfAvailableCards-box {
+    position: relative;
+    background-color: var(--zinc-800);
+    border: 2px solid var(--zinc-700);
+    width: 100px;
+    transition: ease-in-out 0.2s;
+    border-radius: 10px;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .amountOfAvailableCards-text {
+    width: 40px;
+    position: absolute;
+    top: 20px;
+    left: calc(calc(100% / 2) - calc(40px / 2));
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: var(--zinc-700);
+    user-select: none;
+  }
+
   .button-container {
     width: 100%;
     display: flex;
@@ -308,16 +393,18 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
-    padding: 5px;
   }
 
   /* --- wild color options --- */
   .wild-color-container {
+    width: 100%;
     position: relative;
     display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-    background-color: rgba(0, 0, 0, 0.2);
+    justify-content: center;
+    align-items: center;
+    background-color: var(--zinc-800);
+    border: 2px solid var(--white);
+    border-radius: 10px;
   }
 
   .wild-color-list {
@@ -333,7 +420,7 @@
     padding: 0px 10px;
     z-index: 32;
     width: 100%;
-    height: 25px;
+    height: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -350,9 +437,9 @@
     top: 0;
     left: 5px;
     width: calc(100% - 10px);
-    height: 25px;
-    background-color: lightcoral;
+    height: 30px;
     transition: 0.5s ease-in-out;
+    border-radius: 10px;
   }
 
   /* --- winner container --- */
@@ -377,13 +464,19 @@
   }
 
   .home-button {
-    border-color: var(--white);
-    color: var(--white);
+    border-color: var(--zinc-700);
+    color: var(--gray);
     background: transparent;
   }
 
   .home-button:hover {
-    background-color: rgba(255, 255, 255, 0.4);
+    /* background-color: rgba(255, 255, 255, 0.4); */
+    border-color: var(--white);
+    color: var(--white);
+  }
+
+  .winner-text {
+    color: var(--gray);
   }
 
   /* --- game container --- */
@@ -397,6 +490,23 @@
   }
 
   /* --- last played card --- */
+  .last-played-card-container {
+    position: relative;
+  }
+
+  .wildColor-box {
+    position: absolute;
+    top: 20px;
+    right: -25px;
+    width: 25px;
+    height: 50px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    background-color: var(--zinc-800);
+    border: 2px solid var(--white);
+    border-left: 0px;
+  }
+  
   .last-played-card-img {
     background-size: cover;
     height: 200px;
@@ -411,6 +521,7 @@
     transition: transform 0.3s ease-out;
     padding: 3px;
     background: white;
+    -webkit-user-drag: none;
   }
 
   /* --- player cards --- */
@@ -453,17 +564,13 @@
     height: 100%;
     background-size: cover;
     transition: 0.5s ease-in-out;
+    -webkit-user-drag: none;
   }
 
   .selected-card {
     transform: var(--card-transform) scale(1.2);
-    background: linear-gradient(var(--angle), #818181, #adadad, #ffffff);
-    animation: selected-card 3s linear infinite;
-  }
-
-  .winner-span {
-    font-family: "TommySoftMedium";
-    font-size: inherit;
+    /* background: linear-gradient(var(--angle), #818181, #adadad, #ffffff); */
+    /* animation: selected-card 3s linear infinite; */
   }
 
   @keyframes selected-card {

@@ -8,7 +8,6 @@
   } from "../javascripts/AppStore";
   import CONSTANTS from "../javascripts/Constants";
   import { fade } from "svelte/transition";
-  import IconUser from "./IconUser.svelte";
 
   let showDialog = get(playerName) ? false : true;
   let playerNameInputValue;
@@ -26,6 +25,7 @@
       isSelected: false,
     },
   ]);
+  window.addEventListener('keydown', onKeyDown);
 
   function setName() {
     if (!playerNameInputValue) {
@@ -38,6 +38,7 @@
     }
     playerName.set(playerNameInputValue);
     showDialog = false;
+    window.removeEventListener('keydown', onKeyDown);
   }
 
   function onCreateGame() {
@@ -62,6 +63,12 @@
     return get(amountOfPlayersButtons).filter(
       (button) => button.isSelected === true
     )[0].value;
+  }
+
+  function onKeyDown(e) {
+    if (e.key === "Enter") {
+      setName();
+    }
   }
 </script>
 
@@ -117,8 +124,8 @@
         <button class="button" on:click={setName}>SET</button>
       </div>
     </div>
-  {/if}
-</div>
+    {/if}
+  </div>  
 
 <style>
   /* --- screen container --- */

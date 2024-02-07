@@ -231,3 +231,127 @@
   justify-content: center;
   align-items: center;
 }
+
+.player-name-word-wrap {
+  word-wrap: break-word;
+  min-width: 1%;
+}
+
+.players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.player-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 15px;
+  /* flex-wrap: wrap; */
+  /* border: 5px dotted red; */
+}
+
+.player-item-icon {
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  padding: 8px;
+  width: 45px;
+  height: 45px;
+}
+
+.player-item-name {
+  text-align: center;
+  word-wrap: break-word;
+  min-width: 1%;
+  max-width: 80%;
+}
+
+.players-heading-container {
+  position: relative;
+}
+
+.small-players-heading {
+  font-size: 22px;
+  color: var(--white);
+  /* border: 5px dotted red; */
+}
+
+.players-heading {
+  font-size: 32px;
+  color: var(--white);
+  /* border: 5px dotted red; */
+}
+
+.hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 2px solid var(--zinc-700);
+  margin: 0;
+  padding: 0;
+}
+
+.badge {
+  border: 2px solid var(--zinc-700);
+  border-radius: 5px;
+  padding: 10px 20px 10px 20px;
+  display: flex;
+  justify-items: center;
+  align-items: center;
+}
+
+.small-badge {
+  border: 2px solid var(--zinc-700);
+  border-radius: 5px;
+  padding: 5px 10px 5px 10px;
+  display: flex;
+  justify-items: center;
+  align-items: center;
+}
+
+.inline-badge-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+}
+
+.list-inline-badge-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.numberOfPlayers {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(0, -50%);
+  border: 1px solid var(--yellow);
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.smallNumberOfPlayers {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  border: 1px solid var(--yellow);
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 16px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.winner-span {
+  font-family: "TommySoftMedium";
+  font-size: inherit;
+  color: var(--yellow);
+}

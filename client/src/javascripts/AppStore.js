@@ -62,17 +62,17 @@ export const gameScreenData = writable({
             {
                 color: CONSTANTS.COLORS.GREEN,
                 hex: "#85c042",
-                topOffset: 35,
+                topOffset: 40,
             },
             {
                 color: CONSTANTS.COLORS.RED,
                 hex: "#db3a25",
-                topOffset: 65,
+                topOffset: 75,
             },
             {
                 color: CONSTANTS.COLORS.YELLOW,
                 hex: "#fed439",
-                topOffset: 95,
+                topOffset: 110,
             }
         ],
          
@@ -421,4 +421,30 @@ export function getPlayerName(socketId) {
         return list[0];
     else
         return null;
+}
+
+
+export function getActivePlayerIndex() {
+    const data = get(gameScreenData);
+    for(let i=0; i<data.match.players.length; i++) {
+        if (data.match.players[i].id == data.match.activePlayer)
+            return i;
+    }
+    return -1;
+}
+
+
+export function convertWildColor(color) {
+    switch(color) {
+        case CONSTANTS.COLORS.BLUE:
+            return "#3473b1";
+        case CONSTANTS.COLORS.GREEN:
+            return "#92bf56";
+        case CONSTANTS.COLORS.RED:
+            return "#c94831";
+        case CONSTANTS.COLORS.YELLOW:
+            return "#f7d75a";
+        default:
+            return "";
+    }
 }
