@@ -47,9 +47,9 @@
         color: var(--white);
     }
 
-    .draw-button:disabled {
+    /* .draw-button:disabled {
         opacity: 0.5;
-    }
+    } */
 
     .path-stroke {
         transition: ease-in-out 0.2s;
