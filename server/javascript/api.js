@@ -55,7 +55,7 @@ function changeActivePlayer(match) {
   }
 
   match.activePlayer = match.players[indexOfNextActivePlayer].socketId;
-  console.log("activePlayer", match.players[indexOfNextActivePlayer].name);
+  // console.log("activePlayer", match.players[indexOfNextActivePlayer].name);
   return indexOfNextActivePlayer;
 }
 

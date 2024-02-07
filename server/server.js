@@ -174,10 +174,7 @@ io.on("connection", (socket) => {
 
       //choose first card
       const firstCard = availableCards.filter((el) => !el.isSpecial).shift();
-      // availableCards = availableCards.filter((el) => el.src !== firstCard.src);
-      availableCards = availableCards.filter(
-        (el) => el.src !== firstCard.src && el.symbol < 1
-      );
+      availableCards = availableCards.filter((el) => el.src !== firstCard.src);
 
       await updateDoc(docRef, {
         players: updatedPlayersList,
@@ -407,6 +404,11 @@ io.on("connection", (socket) => {
     // handling of drawed card
     if (match.availableCards.length > 0) {
       player.cards.push(match.availableCards.shift());
+      if (match.availableCards.length === 0) {
+        const lastCard = match.playedCards.shift();
+        match.availableCards = shuffleArray(match.playedCards);
+        match.playedCards = [lastCard];
+      }
     } else {
       if (match.playedCards.length > 1) {
         const lastCard = match.playedCards.shift();
@@ -521,13 +523,14 @@ io.on("connection", (socket) => {
       } else if (match.state == CONSTANTS.GAME_STATES.ACTIVE) {
         changeActivePlayer(match);
         const activePlayers = match.players.filter((el) => !el.afk);
+        const AFKPlayer = match.players.filter((el) => el.afk).shift();
+        match.availableCards.push(...AFKPlayer.cards);
 
         if (activePlayers.length < 2) {
           match.state = CONSTANTS.GAME_STATES.FINISHED;
           match.winner = activePlayers[0].socketId;
           await deleteDoc(docRef);
         } else {
-          //update match in firebase
           await updateDoc(docRef, match);
         }
 
