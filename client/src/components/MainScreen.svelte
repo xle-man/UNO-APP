@@ -105,7 +105,7 @@
 
   <!-- fixed element -->
   {#if showDialog}
-    <div class="dialog-container">
+    <div class="dialog-container bordered-bottom">
       <!--z-index[10]-->
       <div class="box">
         <div>
@@ -238,6 +238,7 @@
     background-color: var(--zinc-800);
     color: var(--zinc-700);
     border-radius: 10px;
+    user-select: none;
   }
 
   .amountOfPlayersButton:hover {

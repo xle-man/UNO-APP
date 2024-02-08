@@ -94,7 +94,7 @@
       {:else if $listOfMatchesScreenData.matches.length === 0 && !$listOfMatchesScreenData.isFetching}
         <div class="list-status">There are no matches</div>
       {:else}
-        <div class="list-status">fetching...</div>
+        <div class="list-status">Fetching data...</div>
       {/if}
     </div>
   </div>

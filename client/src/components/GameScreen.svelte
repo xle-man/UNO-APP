@@ -112,24 +112,28 @@
   <div class="other-players-info-container">
     <!--z-index[10]-->
     {#each $gameScreenData.match.players as player}
-      <div class="other-players-info-box">
+      <div class="other-players-info-box" style={`opacity: ${player.afk ? "0.5" : "1"};`}>
         <div class="other-player-info-avatar">
           <IconUser color="var(--gray)" strokeWidth={2} />
         </div>
         <div class="other-player-info-amountOfCards">
-          {player.amountOfCards}
+          {player.afk ? "" : player.amountOfCards}
         </div>
         <div
-          style={`color: ${player.id == $gameScreenData.player.id ? "var(--white)" : "var(--gray)"};`}
+          class="player-name" style={`color: ${player.id == $gameScreenData.player.id ? "var(--white)" : "var(--gray)"};`}
         >
           {player.name}
         </div>
+        {#if player.afk}
+          <div class="small-info-box offline-text-box" transition:fade={{duration: 500}}>OFFLINE</div>
+        {/if}
         {#if player.amountOfCards === 1}
-          <div class="uno-text-box" transition:fade={{duration: 500}}>UNO</div>
+          <div class="small-info-box uno-text-box" transition:fade={{duration: 500}}>UNO</div>
         {/if}
       </div>
     {/each}
     <div class="active-player-marker" style={`transform: translateY(${5 + indexOfActivePlayer * 50 + indexOfActivePlayer * 10}px);`}></div>
+    <!-- <div class="active-player-marker-arrow" style={`transform: translateY(${5 + indexOfActivePlayer * 50 + indexOfActivePlayer * 10}px);`}></div> -->
   </div>
 
   <!-- fixed element -->
@@ -257,6 +261,19 @@
     /* animation: active-player-marker 2s ease-in-out infinite alternate; */
   }
 
+  /* .active-player-marker-arrow {
+    position: absolute;
+    top: -5px;
+    left: 0px;
+    background-color: var(--yellow);
+    width: 10px;
+    height: 25px;
+    clip-path: polygon(0 0, 21% 0, 100% 100%, 0% 100%);
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    transition: 0.5s ease-in-out;
+  } */
+
   @keyframes active-player-marker {
     0% {
       background-color: var(--gray);
@@ -286,7 +303,9 @@
   }
 
   .other-player-info-amountOfCards {
-    padding: 2.5px 5px;
+    /* padding: 2.5px 5px; */
+    width: 25px;
+    aspect-ratio: 1/1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -296,17 +315,40 @@
     user-select: none;
   }
 
-  .uno-text-box {
+  .player-name {
+    padding: 2.5px;
+    max-width: 200px;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: 5s ease;
+  }
+
+  .player-name:hover {
+    max-width: none;
+  }
+
+  .small-info-box {
     background-color: var(--zinc-800);
     border: 2px solid var(--yellow);
     color: var(--yellow);
     font-size: 14px;
     padding: 2.5px 5px;
     transition: ease-in-out 0.2s;
-    animation: hithere 1.5s ease infinite;
     border-radius: 10px;
     margin-left: 10px;
     user-select: none;
+  }
+
+  .uno-text-box {
+    border: 2px solid var(--yellow);
+    color: var(--yellow);
+    animation: hithere 1.5s ease infinite;
+  }
+
+  .offline-text-box {
+    border: 2px solid var(--gray);
+    color: var(--gray);
   }
 
   @keyframes hithere {
@@ -581,4 +623,28 @@
       --angle: 360deg;
     }
   }
+
+  /* .tooltip {
+    position: relative;
+  }
+
+  .tooltip .tooltip-text {
+    position: absolute;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+    background-color: black;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    visibility: hidden;
+    overflow: auto;
+    text-overflow: unset;
+  }
+
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
+  } */
 </style>
