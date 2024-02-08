@@ -526,8 +526,7 @@ io.on("connection", (socket) => {
         const AFKPlayer = match.players.filter((el) => el.afk).shift();
         match.availableCards.push(...AFKPlayer.cards);
         match.players.forEach((player) => {
-          if (player.afk) player.cards = [];
-          console.log(player);
+          player.afk && (player.cards = []);
         });
 
         if (activePlayers.length < 2) {
