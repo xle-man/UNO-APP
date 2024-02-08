@@ -525,6 +525,10 @@ io.on("connection", (socket) => {
         const activePlayers = match.players.filter((el) => !el.afk);
         const AFKPlayer = match.players.filter((el) => el.afk).shift();
         match.availableCards.push(...AFKPlayer.cards);
+        match.players.forEach((player) => {
+          if (player.afk) player.cards = [];
+          console.log(player);
+        });
 
         if (activePlayers.length < 2) {
           match.state = CONSTANTS.GAME_STATES.FINISHED;
